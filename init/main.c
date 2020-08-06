@@ -1,9 +1,9 @@
-void	kernel_start(void)
+int		kernel_start(void)
 {
-	return ;
+	return (0);
 }
 
-int		main(void)
+int		kernel_main(void)
 {
 	kernel_start();
 	return (0);

@@ -1,42 +1,23 @@
-NAME		:= kfs
+#includes
 
-#directories
-ARCH_DIR	:= arch
-INC_DIR		:= include
-INIT_DIR	:= init
-OBJS_DIR	:= obj
-KERNEL_DIR	:= kfs
+include config/config.mk
 
-ifndef KERNEL_SRC
-	KERNEL_SRC	:=kfs
-endif
-
-#compiler / asm
-CC			:= /usr/bin/gcc
-AS			:= /usr/bin/nasm
-
-#flags
-CFLAGS		:= -Wall -Wextra -Werror
-CRCFLAGS	:= -fno-builtin -nostdlib -nodefaultlibs -fno-stack-protector
-IFLAGS		:= -I $(INC_DIR)
+include $(ARCH_DIR)/$(ARCH)/Makefile
+include $(KERNEL_DIR)/Makefile
+include $(INIT_DIR)/Makefile
 
 #files
 
-#includes
-
-include($(KERNEL_SRC)/Makefile)
-
-#debug
+OBJS := $(OBJS_ARCH) $(OBJS_INIT)
 
 #rules
-install:
-
 all: $(NAME)
 
-$(NAME):
+install:
+	sh $(SCRIPTS_DIR)/create-img.sh
 
-$(OBJS_DIR)/%.o: %.c
-	$(CC) $(CFLAGS) $(CRCFLAGS) -c $(IFLAGS) -o $@ $^
+$(NAME): $(OBJS)
+	ld $(LDFLAGS) -o $(NAME) $(OBJS)
 
 clean:
 	rm -rf $(OBJS)
