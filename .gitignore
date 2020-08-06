@@ -6,6 +6,7 @@
 *.ko
 *.obj
 *.elf
+objs
 
 # Linker output
 *.ilk
@@ -50,3 +51,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# KFS Stuff
+*.iso
+*.img
+dest
+*tmp*
+*test*
