@@ -1,0 +1,1 @@
+qemu-system-i386 -curses -cpu kvm32 -cdrom kfs.iso
