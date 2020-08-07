@@ -14,10 +14,11 @@ OBJS := $(OBJS_ARCH) $(OBJS_INIT)
 all: $(NAME)
 
 install:
-	sh $(SCRIPTS_DIR)/create-img.sh
+	sh $(SCRIPTS_DIR)/img-create.sh
+	sh $(SCRIPTS_DIR)/kvm-start.sh
 
 $(NAME): $(OBJS)
-	ld $(LDFLAGS) -o $(NAME) $(OBJS)
+	$(LD) $(LDFLAGS) -o $(NAME) $(OBJS)
 
 clean:
 	rm -rf $(OBJS)
@@ -25,6 +26,7 @@ clean:
 fclean:
 	rm -rf $(OBJS)
 	rm -f $(NAME)
+#	rm -rf $(DEST_DIR)
 
 re: fclean all
 
