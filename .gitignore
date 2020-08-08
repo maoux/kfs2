@@ -55,6 +55,7 @@ dkms.conf
 # KFS Stuff
 *.iso
 *.img
+*.bin
 dest
 *tmp*
 *test*
