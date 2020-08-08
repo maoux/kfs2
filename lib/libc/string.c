@@ -35,7 +35,7 @@ extern int		memcmp(const void *str1, const void *str2, size_t n)
 extern void		*memcpy(void *dest, const void *src, size_t n)
 {
 	unsigned char	*cdest = (unsigned char *)dest;
-	unsigned char	*csrc = (unsigned char *)csrc;
+	unsigned char	*csrc = (unsigned char *)src;
 
 	for(size_t i = 0; i < n; i++) {
 		*(cdest + i) = *(csrc + i);
@@ -47,7 +47,7 @@ extern void		*memmove(void *dest, const void *src, size_t n)
 {
 	unsigned char	buffer[n];
 	unsigned char	*cdest = (unsigned char *)dest;
-	unsigned char	*csrc = (unsigned char *)csrc;
+	unsigned char	*csrc = (unsigned char *)src;
 
 	for(size_t i = 0; i < n; i++) {
 		buffer[i] = *(csrc + i);
@@ -101,7 +101,7 @@ extern char		*strchr(const char *str, int c)
 
 	for (size_t i = 0; *(str + i); i++) {
 		if (*(str + i) == cc) {
-			return (str + i);
+			return (((char *)str) + i);
 		}
 	}
 	return (NULL);
@@ -188,7 +188,7 @@ extern char		*strpbrk(const char *str1, const char *str2)
 {
 	for (size_t i = 0; str1[i]; i++) {
 		if (c_is_in_str(str2, str1[i])) {
-			return (str1 + i);
+			return (((char *)str1) + i);
 		}
 	}
 	return (NULL);
@@ -198,10 +198,13 @@ extern char		*strrchr(const char *str, int c)
 {
 	unsigned char	cc = (unsigned char)c;
 
-	for (size_t i = strlen(str) - 1; i >= 0; i--) {
+	for (size_t i = strlen(str) - 1; i > 0; i--) {
 		if (str[i] == cc) {
-			return (str + i);
+			return (((char *)str) + i);
 		}
+	}
+	if (str[0] == cc) {
+		return ((char *)str);
 	}
 	return (NULL);
 }
@@ -226,7 +229,7 @@ extern char		*strstr(const char *haystack, const char *needle)
 	for (size_t i = 0; haystack[i]; i++) {
 		for (size_t j = 0; needle[j]; j++) {
 			if (needle[j + 1] == '\0' && haystack[i + j] != needle[j]) {
-				return (haystack + i);
+				return (((char *)haystack) + i);
 			}
 			if (haystack[i + j] != needle[j]) {
 				break ;
