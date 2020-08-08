@@ -1,32 +1,48 @@
-#includes
-
-include config/config.mk
-
-include $(ARCH_DIR)/$(ARCH)/Makefile
-include $(KERNEL_DIR)/Makefile
-include $(INIT_DIR)/Makefile
-
 #files
 
-OBJS := $(OBJS_ARCH) $(OBJS_INIT)
+OBJS :=
+HEADERS :=
+
+#includes
+
+include .conf
+
+include $(ARCHDIR)/$(ARCH)/files.mk
+include $(KERNELDIR)/files.mk
+include $(INITDIR)/files.mk
+
 
 #rules
 all: $(NAME)
 
 install:
-	sh $(SCRIPTS_DIR)/img-create.sh
-	sh $(SCRIPTS_DIR)/kvm-start.sh
+	sh $(SCRIPTSDIR)/img-create.sh
+	sh $(SCRIPTSDIR)/kvm-start.sh
 
-$(NAME): $(OBJS)
-	$(LD) $(LDFLAGS) -o $(NAME) $(OBJS)
+$(NAME): $(OBJS) $(HEADERS)
+	@echo "Linking project ..."
+	@$(LD) $(LDFLAGS) -o $(NAME) $(OBJS)
+	@echo "\033[0;32mBinary $(NAME) successfuly created!\033[0m"
+
+
+$(OBJSDIR)/%.o: %.c
+	@echo "Compiling source file" $^ "to" $@ "..." 
+	@$(CC) $(CFLAGS) $(CRCFLAGS) -c $(IFLAGS) -o $@ $^
+
+$(OBJSDIR)/%.o: %.asm
+	@echo "Compiling source file" $^ "to" $@ "..." 
+	@$(AS) $(ASFLAGS) -o $@ $^
 
 clean:
-	rm -rf $(OBJS)
+	@echo "Cleaning" $(OBJSDIR) "..."
+	@rm -rf $(OBJS)
 
 fclean:
-	rm -rf $(OBJS)
-	rm -f $(NAME)
-#	rm -rf $(DEST_DIR)
+	@echo "Cleaning" $(OBJSDIR) "..."
+	@rm -rf $(OBJS)
+	@echo "Cleaning" $(ROOTDIR) "..."
+	@rm -f $(NAME) $(NAME_ISO)
+#	rm -rf $(DESTDIR)
 
 re: fclean all
 

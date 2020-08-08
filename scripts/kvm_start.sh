@@ -1,1 +1,0 @@
-qemu-system-x86_64 -curses -cpu kvm32 -cdrom kfs.iso
