@@ -10,8 +10,9 @@ include .conf.mk
 include $(LIBDIR)/libs.mk
 
 include $(ARCHDIR)/$(ARCH)/files.mk
-include $(KERNELDIR)/files.mk
 include $(INITDIR)/files.mk
+include $(KERNELDIR)/files.mk
+
 
 
 #rules

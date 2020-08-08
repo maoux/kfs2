@@ -20,4 +20,10 @@ enum vga_colors {
 	VGA_COLOR_WHITE			= 15
 };
 
+extern void		clear_screen(void);
+extern void		putchar(const unsigned char c);
+extern void		putstring(const char *str);
+extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
+extern void		init_video(void);
+
 #endif

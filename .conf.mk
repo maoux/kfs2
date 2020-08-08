@@ -32,5 +32,5 @@ LDFLAGS		:= -T $(LDFILE) -m elf_i386
 ASFLAGS		:= -f elf32
 CFLAGS		:= -Wall -Wextra -Werror -m32 -O2
 CRCFLAGS	:= -ffreestanding -fno-builtin -nostdlib -nodefaultlibs -fno-stack-protector
-IFLAGS		:= -I $(INCDIR)
+IFLAGS		:= -I $(INCDIR) -I $(INCDIR)/$(KERNELDIR)
 DEBUGFLAGS	:= -g

@@ -1,7 +1,10 @@
-
+#include <kernel.h>
+#include <vga.h>
 
 int		kernel_start(void)
 {
+	init_video();
+	putstring("Hello World!\n");
 	return (0);
 }
 
