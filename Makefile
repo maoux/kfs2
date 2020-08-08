@@ -5,7 +5,7 @@ HEADERS :=
 
 #includes
 
-include .conf
+include .conf.mk
 
 include $(ARCHDIR)/$(ARCH)/files.mk
 include $(KERNELDIR)/files.mk
