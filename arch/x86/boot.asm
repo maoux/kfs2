@@ -1,7 +1,7 @@
 ;declare constant for the multiboot header
 MBALIGN		equ 1 << 0
 MEMINFO		equ 1 << 1
-FLAGS		equ MBALIGN | MEMINFO
+FLAGS		equ MBALIGN | MEMINFO 
 MAGIC		equ 0x1BADB002
 CHECKSUM	equ -(MAGIC + FLAGS)
 
@@ -22,13 +22,20 @@ stack_top:
 section .text
 	global _start:function (_start.end - _start)
 
+	extern keyboard_handler_main
+
 _start:
+
 	mov esp, stack_top
-	
-	extern kernel_main
-	call kernel_main
+
+	push ebx
+	push eax
+
+	extern kmain
+	call kmain
 
 	cli
+
 .hang:
 	hlt
 	jmp .hang

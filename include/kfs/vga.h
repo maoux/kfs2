@@ -23,6 +23,8 @@ enum vga_colors {
 extern void		clear_screen(void);
 extern void		putchar(const unsigned char c);
 extern void		putstring(const char *str);
+extern void		putnbr(int n);
+extern void		putnbr_base(int n, int base);
 extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
 extern void		init_video(void);
 

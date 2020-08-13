@@ -66,6 +66,38 @@ extern void		putchar(unsigned char c)
 	move_cursor();
 }
 
+extern void		putnbr(int n)
+{
+	if (n < 0) {
+		putchar('-');
+		putnbr(-n);
+	}
+	if (n < 9) {
+		putchar((char)n + 48);
+		return ;
+	}
+	putnbr(n / 10);
+	putchar((char)(n % 10) + 48);
+}
+
+extern void		putnbr_base(int n, int base)
+{
+	static char	set[16] =	{'0', '1', '2', '3', '4', '5',
+							 '6', '7', '8', '9', 'A', 'B',
+							 'C', 'D', 'E', 'F'};
+
+	if (n < 0) {
+		putchar('-');
+		putnbr_base(-n, base);
+	}
+	if (n < base) {
+		putchar(set[n]);
+		return ;
+	}
+	putnbr_base(n / base, base);
+	putchar(set[n % base]);
+}
+
 extern void		putstring(const char *str)
 {
 	for (size_t i = 0; str[i]; i++) {
