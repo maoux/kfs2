@@ -1,6 +1,8 @@
 #ifndef __VGA_H__
 # define __VGA_H__
 
+# include <stdint.h>
+
 enum vga_colors {
 	VGA_COLOR_BLACK			= 0,
 	VGA_COLOR_BLUE			= 1,
@@ -24,7 +26,7 @@ extern void		clear_screen(void);
 extern void		putchar(const unsigned char c);
 extern void		putstring(const char *str);
 extern void		putnbr(int n);
-extern void		putnbr_base(int n, int base);
+extern void		putnbr_base(int n, int base, uint8_t uppercase);
 extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
 extern void		init_video(void);
 

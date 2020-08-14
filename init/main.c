@@ -37,7 +37,7 @@ int		kmain(uint32_t magic, uint32_t *meminfo_offset)
 	}
 	init_video();
 
-	printk("memory info location from grub : %h\n", (int)meminfo_offset);
+	printk("memory info location from grub : %010#x\n", (int)meminfo_offset);
 	print_grub_meminfo(meminfo_offset);
 	kernel_start();
 	return (0);

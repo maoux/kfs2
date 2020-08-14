@@ -1,4 +1,6 @@
-SRCS_LIBC_C = string.c
+SRCS_LIBC_C = 	string.c\
+				ftlib.c\
+				stdlib.c
 
 SRCS_LIBC_A =
 

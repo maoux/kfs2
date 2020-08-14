@@ -80,22 +80,26 @@ extern void		putnbr(int n)
 	putchar((char)(n % 10) + 48);
 }
 
-extern void		putnbr_base(int n, int base)
+extern void		putnbr_base(int n, int base, uint8_t uppercase)
 {
-	static char	set[16] =	{'0', '1', '2', '3', '4', '5',
+	static char	uset[16] =	{'0', '1', '2', '3', '4', '5',
 							 '6', '7', '8', '9', 'A', 'B',
 							 'C', 'D', 'E', 'F'};
+	static char	lset[16] =	{'0', '1', '2', '3', '4', '5',
+							 '6', '7', '8', '9', 'a', 'b',
+							 'c', 'd', 'e', 'f'};
 
 	if (n < 0) {
 		putchar('-');
-		putnbr_base(-n, base);
+		putnbr_base(-n, base, uppercase);
 	}
 	if (n < base) {
-		putchar(set[n]);
+		uppercase ? putchar(uset[n]) : putchar(lset[n]);
 		return ;
 	}
-	putnbr_base(n / base, base);
-	putchar(set[n % base]);
+	putnbr_base(n / base, base, uppercase);
+	uppercase ? putchar(uset[n % base]) : putchar(lset[n % base]);
+	
 }
 
 extern void		putstring(const char *str)
