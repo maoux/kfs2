@@ -1,13 +1,12 @@
 PROJECT_NAME	:= kfs1
 NAME			?= kfs.bin
-NAME_ISO		?= kfs.iso
-NAME_IMG		?= kfs.img
+NAME_ISO		?= kfs.iso #used with grub-mkrescue
+NAME_IMG		?= disk.img
 ARCH			?= x86
 MAKE_EXT		?= .mk
 
 #directories
 
-DESTDIR			?= dest
 ARCHDIR			:= arch
 INCDIR			:= include
 INITDIR			:= init

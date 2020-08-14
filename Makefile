@@ -44,9 +44,12 @@ fclean:
 	@echo "Cleaning" $(OBJSDIR) "..."
 	@rm -rf $(OBJS)
 	@echo "Cleaning" $(ROOTDIR) "..."
-	@rm -f $(NAME) $(NAME_ISO)
-#	rm -rf $(DESTDIR)
+	@rm -f $(NAME)
+
+xclean: fclean
+	@echo "Cleaning" $(NAME_IMG) "..."
+	@rm -rf $(NAME_IMG)
 
 re: fclean all
 
-.PHONY: clean fclean re all install
+.PHONY: clean fclean re all install xclean
