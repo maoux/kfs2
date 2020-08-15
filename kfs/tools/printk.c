@@ -14,10 +14,6 @@ struct options {
 	size_t		width;
 };
 
-//globals
-
-int ret_value;
-
 //statics
 
 static void		init_options(struct options *opts);
@@ -28,6 +24,45 @@ static size_t	printk_bin(int arg, struct options opts);
 static size_t	printk_char(char c);
 static size_t	printk_string(char *str);
 static void		pad(size_t len, char c);
+static void		print_log_prefix(char c);
+
+static void		print_log_prefix(char c)
+{
+	if (c == *KERN_DEBUG) {
+		putstring("LOG DEBUG: ");
+		return ;
+	}
+	else if (c == *KERN_INFO) {
+		putstring("LOG INFO: ");
+		return ;
+	}
+	else if (c == *KERN_NOTICE) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_GREEN);
+		putstring("NOTICE: ");
+	}
+	else if (c == *KERN_WARNING) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_BROWN);
+		putstring("WARNING: ");
+	}
+	else if (c == *KERN_ERR) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_MAGENTA);
+		putstring("ERROR: ");
+	}
+	else if (c == *KERN_CRIT) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_MAGENTA);
+		putstring("CRITICAL: ");
+	}
+	else if (c == *KERN_ALERT) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_RED);
+		putstring("ALERT: ");
+	}
+	else if (c == *KERN_EMERG) {
+		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_RED);
+		putstring("EMERGENCY: ");
+	}
+	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
+}
+
 
 static void		init_options(struct options *opts)
 {
@@ -51,6 +86,9 @@ static size_t	printk_int(int arg, struct options opts)
 	size_t		len = nbrlen(arg);
 
 	if (opts.width && !opts.b_rightpadded) {
+		if (opts.b_zpadded && opts.b_signed) {
+			arg > 0 ? putchar('+') : putchar('-');
+		}
 		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
 			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
 		}
@@ -58,14 +96,23 @@ static size_t	printk_int(int arg, struct options opts)
 			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 		}
 	}
-	if (opts.b_signed) {
+	if (opts.b_signed && (!opts.b_zpadded || !opts.width)) {
 		arg > 0 ? putchar('+') : putchar('-');
+	}
+	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
+		pad(opts.precision - len, '0');
 	}
 	putnbr(arg);
 	if (opts.width && opts.b_rightpadded) {	
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
-	return (len > opts.width ? len : opts.width);
+	if (opts.width > len && opts.width > opts.precision) {
+		return (opts.width);
+	}
+	if (opts.precision > len) {
+		return (opts.precision);
+	}
+	return (len);
 }
 
 static size_t	printk_oct(int arg, struct options opts)
@@ -74,6 +121,7 @@ static size_t	printk_oct(int arg, struct options opts)
 
 	if (opts.b_formatted) {
 		putchar('0');
+		len++;
 	}
 	if (opts.width && !opts.b_rightpadded) {
 		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
@@ -83,13 +131,20 @@ static size_t	printk_oct(int arg, struct options opts)
 			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 		}
 	}
+	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
+		pad(opts.precision - len, '0');
+	}
 	putnbr_base(arg, 8, 0);
 	if (opts.width && opts.b_rightpadded) {	
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
-	return (len > opts.width ? len : opts.width);
-	
-	return (0);
+	if (opts.width > len && opts.width > opts.precision) {
+		return (opts.width);
+	}
+	if (opts.precision > len) {
+		return (opts.precision);
+	}
+	return (len);
 }
 
 static size_t	printk_hex(int arg, struct options opts, uint8_t uppercase)
@@ -108,11 +163,20 @@ static size_t	printk_hex(int arg, struct options opts, uint8_t uppercase)
 			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 		}
 	}
+	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
+		pad(opts.precision - len, '0');
+	}
 	putnbr_base(arg, 16, uppercase);
 	if (opts.width && opts.b_rightpadded) {
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
-	return (len > opts.width ? len : opts.width);
+	if (opts.width > len && opts.width > opts.precision) {
+		return (opts.width);
+	}
+	if (opts.precision > len) {
+		return (opts.precision);
+	}
+	return (len);
 }
 
 static size_t	printk_bin(int arg, struct options opts)
@@ -135,28 +199,39 @@ static size_t	printk_bin(int arg, struct options opts)
 	if (opts.width && opts.b_rightpadded) {
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
-	return (len > opts.width ? len : opts.width);
+	if (opts.width > len && opts.width > opts.precision) {
+		return (opts.width);
+	}
+	if (opts.precision > len) {
+		return (opts.precision);
+	}
+	return (len);
 }
 
 static size_t	printk_char(char c)
 {
 	putchar(c);
-	return (0);
+	return (1);
 }
 
 static size_t	printk_string(char *str)
 {
 	putstring((const char *)str);
-	return (0);
+	return (strlen(str));
 }
 
 extern int	printk(const char *fmt, ...)
 {
 	char	**args = (char **) &fmt;
 	struct options opts = {0, 0, 0, 0, 0, 0};
+	int ret_value;
 
 	ret_value = 0;
 	args++;
+	if (!fmt) {
+		return (0);
+	}
+	print_log_prefix(*fmt++);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
 			fmt++;
@@ -172,12 +247,15 @@ extern int	printk(const char *fmt, ...)
 				if (*fmt== '-') {
 					opts.b_rightpadded = 1;
 					fmt++;
+				}
+				if (*fmt == '.') {
+					fmt++;
 					while (*fmt >= '0' && *fmt <= '9') {
 						opts.precision = opts.precision * 10 + chtoi(*fmt);
 						fmt++;
 					}
 				}
-				if (*fmt > '0' && *fmt < '9') {
+				if (*fmt > '0' && *fmt <= '9') {
 					while (*fmt >= '0' && *fmt <= '9') {
 						opts.width = opts.width * 10 + chtoi(*fmt);
 						fmt++;
@@ -208,6 +286,7 @@ extern int	printk(const char *fmt, ...)
 				}
 				else if (*fmt == 's') {
 					if (*args == NULL) {
+						args++;
 						ret_value += printk_string("(null)");
 					}
 					else {
@@ -224,7 +303,7 @@ extern int	printk(const char *fmt, ...)
 			ret_value++;
 			putchar(*fmt);
 		}
-		fmt++;
+		*fmt != '\0' ? fmt++ : 0;
 	}
 	return (ret_value);
 }

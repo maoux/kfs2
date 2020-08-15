@@ -25,7 +25,7 @@ extern size_t	nbrlen_base(int n, int base)
 		len++;
 		n *= -1;
 	}
-	while (n > base) {
+	while (n >= base) {
 		n /= base;
 		len++;
 	}

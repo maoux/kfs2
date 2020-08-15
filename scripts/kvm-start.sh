@@ -8,6 +8,6 @@ fi
 
 kvm	-m 4G \
 	-curses \
-	-cpu core2duo \
+	-cpu kvm32 \
 	-drive format=raw,file=$DISKNAME,media=disk \
 	-gdb tcp::1234
