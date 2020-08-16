@@ -1,4 +1,5 @@
-SRCS_IO_C := io.c
+SRCS_IO_C :=	io.c\
+				keyboard.c
 
 SRCS_IO_A :=
 

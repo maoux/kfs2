@@ -87,7 +87,9 @@ static size_t	printk_int(int arg, struct options opts)
 
 	if (opts.width && !opts.b_rightpadded) {
 		if (opts.b_zpadded && opts.b_signed) {
-			arg > 0 ? putchar('+') : putchar('-');
+			if (arg > 0) {
+				putchar('+');
+			}
 		}
 		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
 			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
@@ -97,7 +99,9 @@ static size_t	printk_int(int arg, struct options opts)
 		}
 	}
 	if (opts.b_signed && (!opts.b_zpadded || !opts.width)) {
-		arg > 0 ? putchar('+') : putchar('-');
+		if (arg > 0) {
+			putchar('+');
+		}
 	}
 	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
 		pad(opts.precision - len, '0');
