@@ -3,6 +3,6 @@
 
 # include <stdint.h>
 
-extern void		print_key(uint32_t key);
+extern void		print_key(uint32_t key, uint32_t status);
 
 #endif

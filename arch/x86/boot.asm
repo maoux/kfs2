@@ -35,25 +35,25 @@ _start:
 	call kmain
 
 	cli
-;--------------------------------------
-; Main-Routine
-.again:
-	in al, 64h       ; get the status
-	test al, 1       ; check output buffer
-	jz short .nokey
-	test al, 20h     ; check if it is a PS2Mouse-byte
-	jnz short .nokey
-	in al,60h       ; get the key
 
-	push eax
+.again:
+	in		al, 64h
+	test	al, 1
+	jz		short .nokey
+	test	al, 20h
+	jnz		short .nokey
+	mov		edx, eax
+	in		al, 60h
+
+	push	edx
+	push	eax
+
 	extern print_key
 	call print_key
-; insert your code here (maybe for converting into ASCII...)
 
 .nokey:
 	jmp .again
-;--------------------------------------
-; At the end
+
 	cli
 
 .hang:
