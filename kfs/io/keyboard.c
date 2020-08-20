@@ -1,6 +1,7 @@
 #include <keyboard.h>
 #include <vga.h>
-#include <kernel.h>
+#include <kfs/kernel.h>
+#include <kfs/io.h>
 
 #define KEY_MAP_SIZE	94
 
@@ -10,6 +11,14 @@ uint8_t		ctrl_r = 0;
 uint8_t		alt_l = 0;
 uint8_t		alt_r = 0;
 
+static uint8_t		wait_ps2_to_write(void);
+static uint8_t		wait_ps2_to_read(void);
+
+static uint8_t	send_command(uint8_t port, uint8_t cmd,
+							 uint8_t data, uint8_t send_data);
+
+
+static void		print_key(uint32_t key, uint32_t status);
 
 //US QWERTY standard keyboard set1 lower case
 const char	key_map_1_lower[KEY_MAP_SIZE] = {
@@ -32,7 +41,48 @@ const char	key_map_1_upper[KEY_MAP_SIZE] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
 
-extern void		print_key(uint32_t key, uint32_t status)
+static uint8_t		wait_ps2_to_write(void)
+{
+	uint8_t		status;
+
+	//wait for bit 1 to be clear
+	do {
+		status = inportb(0x64);
+	} while ((status & 0x02) == 1);
+	return (status);
+}
+
+static uint8_t		wait_ps2_to_read(void)
+{
+	uint8_t		status;
+
+	//wait for bit 0 to be set
+	do {
+		status = inportb(0x64);
+	} while ((status & 0x01) == 0);
+	return (status);
+}
+
+static uint8_t	send_command(uint8_t port, uint8_t cmd, uint8_t data, uint8_t send_data)
+{
+	uint8_t		response;	
+
+	wait_ps2_to_write();
+	//send command code to controller
+	outportb(port, cmd);
+	if (send_data) {
+		wait_ps2_to_write();
+		//send data byte to data port
+		outportb(0x60, data);
+	}
+	wait_ps2_to_read();
+	//read response from data port
+	response = inportb(0x60);
+	return (response);
+}
+
+
+static void		print_key(uint32_t key, uint32_t status)
 {
 	(void)status;
 	switch (key) {
@@ -79,5 +129,39 @@ extern void		print_key(uint32_t key, uint32_t status)
 				}
 			}
 			return ;
+	}
+}
+
+
+extern void		keyboard_loop(void)
+{
+	uint8_t		status;
+	uint8_t		key;
+
+
+	__asm__ volatile("cli;");
+
+	key = send_command(0x64, 0xaa, 0, 0);
+	if (key == 0x55) {
+		printk(KERN_INFO "Test PS/2 Controller passed\n");
+	}
+	else if (key == 0xfc) {
+		printk(KERN_INFO "Test PS/2 Controller failed\n");
+	}
+
+	//get scan code set (between 41, 43 or 3f - 1, 2 or 3)
+	key = send_command(0x60, 0xf0, 0x00, 0x01);
+	while (key == 0xfa) {
+		wait_ps2_to_read();
+		key = inportb(0x60);
+	}
+	printk(KERN_INFO "Current scan code set : %d\n", (key & 0x07));
+
+	while (1) {
+		status = wait_ps2_to_read();
+		if (status != 0x01 && status != 0x20) {
+			key = inportb(0x60);
+			print_key(key, status);
+		}
 	}
 }

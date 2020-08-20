@@ -36,25 +36,25 @@ _start:
 
 	cli
 
-.again:
-	in		al, 64h
-	test	al, 1
-	jz		short .nokey
-	test	al, 20h
-	jnz		short .nokey
-	mov		edx, eax
-	in		al, 60h
+; .again:
+; 	in		al, 64h
+; 	test	al, 1
+; 	jz		short .nokey
+; 	test	al, 20h
+; 	jnz		short .nokey
+; 	mov		edx, eax
+; 	in		al, 60h
 
-	push	edx
-	push	eax
+; 	push	edx
+; 	push	eax
 
-	extern print_key
-	call print_key
+; 	extern print_key
+; 	call print_key
 
-.nokey:
-	jmp .again
+; .nokey:
+; 	jmp .again
 
-	cli
+; 	cli
 
 .hang:
 	hlt

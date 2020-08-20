@@ -1,6 +1,6 @@
-#include <kernel.h>
-#include <vga.h>
-#include <io.h>
+#include <kfs/kernel.h>
+#include <kfs/vga.h>
+#include <kfs/keyboard.h>
 
 static void		print_grub_meminfo(uint32_t *addr)
 {
@@ -45,7 +45,6 @@ static void		print_grub_meminfo(uint32_t *addr)
 	// 		mmap = (t_mmap *)((uint32_t)mmap + mmap->size + sizeof(uint32_t));
 	// 	}
 	// }
-	//printk("")
 }
 
 extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
@@ -57,5 +56,6 @@ extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
 
 	printk(KERN_DEBUG "memory info location from grub : %010#x\n", (int)meminfo_offset);
 	print_grub_meminfo(meminfo_offset);
+	keyboard_loop();
 	return (0);
 }
