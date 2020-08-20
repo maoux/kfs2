@@ -49,6 +49,12 @@ extern void		putchar(unsigned char c)
 		if (csr_x > 0) {
 			csr_x--;
 		}
+		else if (csr_y > 0) {
+			csr_x = 79;
+			csr_y--;
+		}
+		cursor = textmemptr + (csr_y * 80 + csr_x);
+		*cursor = ' ' | (attr << 8);
 	} else if (c == '\t') {
 		//n & 000
 		csr_x = (csr_x + 8) & ~(8 - 1);
@@ -60,7 +66,13 @@ extern void		putchar(unsigned char c)
 	} else if (c >= ' ') {
 		cursor = textmemptr + (csr_y * 80 + csr_x);
 		*cursor = c | (attr << 8);
-		csr_x++;
+		if (csr_x == 79) {
+			csr_y++;
+			csr_x = 0;
+		}
+		else {
+			csr_x++;
+		}
 	}
 	scroll();
 	move_cursor();
