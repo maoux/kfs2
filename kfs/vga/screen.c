@@ -5,16 +5,17 @@
 size_t *textmemptr;
 char attr = (char)0x0F;
 int	csr_x = 0, csr_y = 0;
+int max_width, max_height;
 
 static void		scroll(void)
 {
 	size_t		blank, tmp;
 
 	blank = 0x20 | (attr << 8);
-	if (csr_y >= 25) {
-		tmp = csr_y - 25 + 1;
-		memcpy(textmemptr, textmemptr + tmp * 80, (25 - tmp) * 80 * 2);
-		memsetw(textmemptr + (25 - tmp) * 80, blank, 80);
+	if (csr_y >= max_height) {
+		tmp = csr_y - max_height + 1;
+		memcpy(textmemptr, textmemptr + tmp * max_width, (max_height - tmp) * max_width * 2);
+		memsetw(textmemptr + (max_height - tmp) * max_width, blank, max_width);
 		csr_y = 24;
 	}
 }
@@ -23,7 +24,7 @@ static void		move_cursor(void)
 {
 	size_t	tmp;
 
-	tmp = csr_y * 80 + csr_x;
+	tmp = csr_y * max_width + csr_x;
 	outportb(0x3D4, 14);
 	outportb(0x3D5, tmp >> 8);
 	outportb(0x3D4, 15);
@@ -35,7 +36,7 @@ extern void		clear_screen(void)
 	unsigned char	blank;
 
 	blank = 0x20 | (attr < 8);
-	memsetw(textmemptr, blank, 80 * 25);
+	memsetw(textmemptr, blank, max_width * max_height);
 	csr_x = 0;
 	csr_y = 0;
 	move_cursor();
@@ -53,7 +54,7 @@ extern void		putchar(unsigned char c)
 			csr_x = 79;
 			csr_y--;
 		}
-		cursor = textmemptr + (csr_y * 80 + csr_x);
+		cursor = textmemptr + (csr_y * max_width + csr_x);
 		*cursor = ' ' | (attr << 8);
 	} else if (c == '\t') {
 		//n & 000
@@ -64,7 +65,7 @@ extern void		putchar(unsigned char c)
 		csr_y++;
 		csr_x = 0;
 	} else if (c >= ' ') {
-		cursor = textmemptr + (csr_y * 80 + csr_x);
+		cursor = textmemptr + (csr_y * max_width + csr_x);
 		*cursor = c | (attr << 8);
 		if (csr_x == 79) {
 			csr_y++;
@@ -126,8 +127,10 @@ extern void		set_textcolor(const unsigned char bg, const unsigned char fg)
 	attr = (bg << 4) | (fg & 0x0F);
 }
 
-extern void		init_video(void)
+extern void		init_video(uint64_t	*framebuffer_addr, uint32_t width, uint32_t height)
 {
-	textmemptr = (size_t *)0xB8000;
+	textmemptr = (size_t *)framebuffer_addr;
+	max_width = (int)width;
+	max_height = (int)height;
 	clear_screen();
 }

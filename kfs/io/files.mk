@@ -1,5 +1,6 @@
 SRCS_IO_C :=	io.c\
-				keyboard.c
+				keyboard.c\
+				ps2_controller.c
 
 SRCS_IO_A :=
 

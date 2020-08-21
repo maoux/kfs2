@@ -79,6 +79,13 @@ struct palette_color_info {
 };
 typedef struct palette_color_info	t_palette_color_info;
 
+struct color {
+	uint8_t	r;
+	uint8_t	g;
+	uint8_t	b;
+};
+typedef struct color	t_color;
+
 struct direct_rgb_color_info {
 	uint8_t	framebuffer_red_field_position;
 	uint8_t	framebuffer_red_mask_size;
@@ -110,16 +117,16 @@ struct grub_info {
 	t_apm_table	*apm_table;
 	uint32_t	vbe_control_info;
 	uint32_t	vbe_mode_info;
-	uint32_t	vbe_mode;
-	uint32_t	vbe_interface_seg;
-	uint32_t	vbe_interface_off;
-	uint32_t	vbe_interface_len;
-	uint32_t	framebuffer_addr;
+	uint16_t	vbe_mode;
+	uint16_t	vbe_interface_seg;
+	uint16_t	vbe_interface_off;
+	uint16_t	vbe_interface_len;
+	uint32_t	framebuffer_addr_low,framebuffer_addr_high;
 	uint32_t	framebuffer_pitch;
 	uint32_t	framebuffer_width;
 	uint32_t	framebuffer_height;
-	uint32_t	framebuffer_bpp;
-	uint32_t	framebuffer_type;
+	uint8_t		framebuffer_bpp;
+	uint8_t		framebuffer_type;
 	uint32_t	color_info;
 };
 typedef struct grub_info	t_grub_info;

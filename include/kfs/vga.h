@@ -28,6 +28,6 @@ extern void		putstring(const char *str);
 extern void		putnbr(int n);
 extern void		putnbr_base(int n, int base, uint8_t uppercase);
 extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
-extern void		init_video(void);
+extern void		init_video(uint64_t	*framebuffer_addr,  uint32_t width, uint32_t height);
 
 #endif

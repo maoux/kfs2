@@ -2,21 +2,13 @@
 #include <vga.h>
 #include <kfs/kernel.h>
 #include <kfs/io.h>
-
-#define KEY_MAP_SIZE	94
+#include <kfs/ps2_controller.h>
 
 uint8_t		shift = 0;
 uint8_t		ctrl_l = 0;
 uint8_t		ctrl_r = 0;
 uint8_t		alt_l = 0;
 uint8_t		alt_r = 0;
-
-static uint8_t		wait_ps2_to_write(void);
-static uint8_t		wait_ps2_to_read(void);
-
-static uint8_t	send_command(uint8_t port, uint8_t cmd,
-							 uint8_t data, uint8_t send_data);
-
 
 static void		print_key(uint32_t key, uint32_t status);
 
@@ -40,47 +32,6 @@ const char	key_map_1_upper[KEY_MAP_SIZE] = {
 	'7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.', 0x0, 0x0, 0x0,
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
-
-static uint8_t		wait_ps2_to_write(void)
-{
-	uint8_t		status;
-
-	//wait for bit 1 to be clear
-	do {
-		status = inportb(0x64);
-	} while ((status & 0x02) == 1);
-	return (status);
-}
-
-static uint8_t		wait_ps2_to_read(void)
-{
-	uint8_t		status;
-
-	//wait for bit 0 to be set
-	do {
-		status = inportb(0x64);
-	} while ((status & 0x01) == 0);
-	return (status);
-}
-
-static uint8_t	send_command(uint8_t port, uint8_t cmd, uint8_t data, uint8_t send_data)
-{
-	uint8_t		response;	
-
-	wait_ps2_to_write();
-	//send command code to controller
-	outportb(port, cmd);
-	if (send_data) {
-		wait_ps2_to_write();
-		//send data byte to data port
-		outportb(0x60, data);
-	}
-	wait_ps2_to_read();
-	//read response from data port
-	response = inportb(0x60);
-	return (response);
-}
-
 
 static void		print_key(uint32_t key, uint32_t status)
 {
@@ -132,6 +83,91 @@ static void		print_key(uint32_t key, uint32_t status)
 	}
 }
 
+/*
+* TODO add usb legacy check and ACPI check
+*/
+extern uint8_t		init_ps2_keyboard(void)
+{
+	uint8_t		response;
+	uint8_t		config;
+	uint8_t		port1_status = 0x01;
+	uint8_t		port2_status = 0x01;
+
+	/* disable channel 1 ps2 controller */
+	send_command(0x64, 0xad, 0x00, 0, 0);
+	/* if exist, disable channel 2 */
+	send_command(0x64, 0xa7, 0x00, 0, 0);
+
+	/* flush output buffer */
+	inportb(0x60);
+
+	/* read controller configuration byte */
+	wait_ps2_to_write();
+	config = send_command(0x64, 0x20, 0x00, 0, 1);
+	//config &= 0xbc; //0b1011100 clear translation and interupts
+
+
+	/* perform self test */
+	wait_ps2_to_write();
+	response = send_command(0x64, 0xaa, 0, 0, 1);
+	if (response == 0x55) {
+		printk(KERN_INFO "Test PS/2 Controller passed\n");
+	}
+	else if (response == 0xfc) {
+		printk(KERN_INFO "Test PS/2 Controller failed\n");
+	}
+
+	/*
+		write configuration byte here because
+		self test might overwrite it
+	*/
+	//wait_ps2_to_write();
+	//send_command(0x64, 0x60, config, 1, 0);
+
+	/* determine if there are 2 channels */
+	if ((config & 0x20) == 1) {
+		wait_ps2_to_write();
+		send_command(0x64, 0xa8, 0x00, 0, 0);
+		wait_ps2_to_write();
+		config = send_command(0x64, 0x20, 0x00, 0, 1);
+		if ((config & 0x20) == 1) {
+			printk(KERN_INFO "PS/2 controller doesn't support dual channels\n");
+		}
+		else {
+			printk(KERN_INFO "PS/2 controller support dual channels\n");
+			wait_ps2_to_write();
+			send_command(0x64, 0xa7, 0x00, 0, 0);
+		}
+	}
+
+	/*test ps/2 ports*/
+	wait_ps2_to_write();
+	port1_status = send_command(0x64, 0xab, 0x00, 0, 1);
+	if ((config & 0x20) == 0) {
+		wait_ps2_to_write();
+		port2_status = send_command(0x64, 0xa9, 0x00, 0, 1);
+	}
+	if (port1_status != 0x00 && port2_status != 0x00) {
+		/* error no functionning ports left */
+		return (1);
+	}
+
+	/* enable ports */
+	if (port1_status == 0x00) {
+		wait_ps2_to_write();
+		send_command(0x64, 0xae, 0x00, 0, 0);
+	}
+	if (port2_status == 0x00) {
+		wait_ps2_to_write();
+		send_command(0x64, 0xa8, 0x00, 0, 0);
+	}
+
+	/* enable interupts */
+	//config |= 0x03;
+	//wait_ps2_to_write();
+	//send_command(0x64, 0x60, config, 1);
+	return (0);
+}
 
 extern void		keyboard_loop(void)
 {
@@ -141,16 +177,8 @@ extern void		keyboard_loop(void)
 
 	__asm__ volatile("cli;");
 
-	key = send_command(0x64, 0xaa, 0, 0);
-	if (key == 0x55) {
-		printk(KERN_INFO "Test PS/2 Controller passed\n");
-	}
-	else if (key == 0xfc) {
-		printk(KERN_INFO "Test PS/2 Controller failed\n");
-	}
-
 	//get scan code set (between 41, 43 or 3f - 1, 2 or 3)
-	key = send_command(0x60, 0xf0, 0x00, 0x01);
+	key = send_command(0x60, 0xf0, 0x00, 1, 1);
 	while (key == 0xfa) {
 		wait_ps2_to_read();
 		key = inportb(0x60);
@@ -161,6 +189,9 @@ extern void		keyboard_loop(void)
 		status = wait_ps2_to_read();
 		if (status != 0x01 && status != 0x20) {
 			key = inportb(0x60);
+			// if (key == 0x01) {
+			// 	return ;
+			// }
 			print_key(key, status);
 		}
 	}
