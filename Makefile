@@ -13,6 +13,7 @@ include $(ARCHDIR)/$(ARCH)/files.mk
 include $(INITDIR)/files.mk
 include $(KERNELDIR)/files.mk
 
+$(shell mkdir -p $(OBJSDIR))
 
 
 #rules
@@ -26,7 +27,6 @@ $(NAME): $(OBJS) $(HEADERS)
 	@echo "Linking project ..."
 	@$(LD) $(LDFLAGS) -o $(NAME) $(OBJS)
 	@echo "\033[0;32mBinary $(NAME) successfuly created!\033[0m"
-
 
 $(OBJSDIR)/%.o: %.c
 	@echo "Compiling source file" $^ "to" $@ "..." 

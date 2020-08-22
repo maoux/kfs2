@@ -12,22 +12,37 @@ struct options {
 	uint8_t		b_rightpadded;
 	size_t		precision;
 	size_t		width;
+	uint8_t		size;
 };
 
-//statics
+
+
+/* statics */
 
 static void		init_options(struct options *opts);
+
 static size_t	printk_int(int arg, struct options opts);
-static size_t	printk_oct(int arg, struct options opts);
-static size_t	printk_hex(int arg, struct options opts, uint8_t uppercase);
-static size_t	printk_bin(int arg, struct options opts);
+
+static size_t	printk_uint(unsigned int arg, struct options opts);
+
+static size_t	printk_oct(unsigned int arg, struct options opts);
+
+static size_t	printk_hex(unsigned int arg, struct options opts, uint8_t uppercase);
+
+static size_t	printk_bin(unsigned int arg, struct options opts);
+
 static size_t	printk_char(char c);
 static size_t	printk_string(char *str);
+
 static void		pad(size_t len, char c);
 static void		print_log_prefix(char c);
 
+
 static void		print_log_prefix(char c)
 {
+	if (c == *KERN_NONE) {
+		return ;
+	}
 	if (c == *KERN_DEBUG) {
 		putstring("LOG DEBUG: ");
 		return ;
@@ -72,12 +87,28 @@ static void		init_options(struct options *opts)
 	opts->b_zpadded = 0;
 	opts->precision = 0;
 	opts->width = 0;
+	opts->size = TYPE_DEFAULT;
 }
 
 static void		pad(size_t len, char c)
 {
 	for (;len > 0;len--) {
 		putchar(c);
+	}
+}
+
+static void		left_pad(size_t len, struct options opts)
+{
+	if (opts.width && !opts.b_rightpadded) {
+		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
+			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
+		}
+		else {
+			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
+		}
+	}
+	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
+		pad(opts.precision - len, '0');
 	}
 }
 
@@ -119,26 +150,12 @@ static size_t	printk_int(int arg, struct options opts)
 	return (len);
 }
 
-static size_t	printk_oct(int arg, struct options opts)
+static size_t	printk_uint(unsigned int arg, struct options opts)
 {
-	size_t len = nbrlen_base(arg, 8);
+	size_t		len = unbrlen(arg);
 
-	if (opts.b_formatted) {
-		putchar('0');
-		len++;
-	}
-	if (opts.width && !opts.b_rightpadded) {
-		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
-			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
-		}
-		else {
-			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
-		}
-	}
-	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
-		pad(opts.precision - len, '0');
-	}
-	putnbr_base(arg, 8, 0);
+	left_pad(len, opts);
+	putunbr(arg);
 	if (opts.width && opts.b_rightpadded) {	
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
@@ -151,26 +168,39 @@ static size_t	printk_oct(int arg, struct options opts)
 	return (len);
 }
 
-static size_t	printk_hex(int arg, struct options opts, uint8_t uppercase)
+
+static size_t	printk_oct(unsigned int arg, struct options opts)
 {
-	size_t		len = nbrlen_base(arg, 16);
+	size_t len = unbrlen_base(arg, 8);
+
+	if (opts.b_formatted) {
+		putchar('0');
+		len++;
+	}
+	left_pad(len, opts);
+	putunbr_base(arg, 8, 0);
+	if (opts.width && opts.b_rightpadded) {	
+		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
+	}
+	if (opts.width > len && opts.width > opts.precision) {
+		return (opts.width);
+	}
+	if (opts.precision > len) {
+		return (opts.precision);
+	}
+	return (len);
+}
+
+static size_t	printk_hex(unsigned int arg, struct options opts, uint8_t uppercase)
+{
+	size_t		len = unbrlen_base(arg, 16);
 
 	if (opts.b_formatted) {
 		uppercase ? putstring("0X") : putstring("0x");
 		len += 2;
 	}
-	if (opts.width && !opts.b_rightpadded) {
-		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
-			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
-		}
-		else {
-			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
-		}
-	}
-	if (opts.precision && opts.precision > len  && (opts.width > opts.precision || !opts.width)) {
-		pad(opts.precision - len, '0');
-	}
-	putnbr_base(arg, 16, uppercase);
+	left_pad(len, opts);
+	putunbr_base(arg, 16, uppercase);
 	if (opts.width && opts.b_rightpadded) {
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
@@ -183,23 +213,16 @@ static size_t	printk_hex(int arg, struct options opts, uint8_t uppercase)
 	return (len);
 }
 
-static size_t	printk_bin(int arg, struct options opts)
+static size_t	printk_bin(unsigned int arg, struct options opts)
 {
-	size_t		len = nbrlen_base(arg, 2);
+	size_t		len = unbrlen_base(arg, 2);
 
 	if (opts.b_formatted) {
 		putstring("0b");
 		len += 2;
 	}
-	if (opts.width && !opts.b_rightpadded) {
-		if (opts.precision && opts.width > opts.precision && opts.precision > len) {
-			opts.b_zpadded ? pad(opts.width - opts.precision, '0') :  pad(opts.width - opts.precision, ' ');
-		}
-		else {
-			opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
-		}
-	}
-	putnbr_base(arg, 2, 0);
+	left_pad(len, opts);
+	putunbr_base(arg, 2, 0);
 	if (opts.width && opts.b_rightpadded) {
 		opts.b_zpadded ? pad(opts.width - len, '0') :  pad(opts.width - len, ' ');
 	}
@@ -227,7 +250,7 @@ static size_t	printk_string(char *str)
 extern int	printk(const char *fmt, ...)
 {
 	char	**args = (char **) &fmt;
-	struct options opts = {0, 0, 0, 0, 0, 0};
+	struct options opts = {0, 0, 0, 0, 0, 0, 0};
 	int ret_value;
 
 	ret_value = 0;
@@ -240,6 +263,22 @@ extern int	printk(const char *fmt, ...)
 		if (*fmt == '%') {
 			fmt++;
 			do {
+				if (*fmt == 'l') {
+					opts.size = TYPE_LONG;
+					fmt++;
+					if (*fmt == 'l') {
+						opts.size = TYPE_LONG_LONG;
+						fmt++;
+					}
+				}
+				if (*fmt == 'h') {
+					opts.size = TYPE_SHORT;
+					fmt++;
+					if (*fmt == 'h') {
+						opts.size = TYPE_CHAR;
+						fmt++;
+					}
+				}
 				if (*fmt == '0') {
 					opts.b_zpadded = 1;
 					fmt++;
@@ -270,23 +309,78 @@ extern int	printk(const char *fmt, ...)
 					fmt++;
 				}
 				if (*fmt == 'd' || *fmt == 'i') {
-					ret_value += printk_int(*((int *) args++), opts);
+					if (opts.size == TYPE_CHAR) {
+						ret_value += printk_int(*((char *) args++), opts);
+					}
+					else if (opts.size == TYPE_SHORT) {
+						ret_value += printk_int(*((short int *) args++), opts);
+					}
+					else if (opts.size == TYPE_DEFAULT || opts.size == TYPE_LONG) {
+						ret_value += printk_int(*((int *) args++), opts);
+					}
+					else if (opts.size == TYPE_LONG_LONG) {
+						ret_value += printk_int(*((long long int *) args++), opts);
+					}
 				}
 				else if (*fmt == 'u') {
-					ret_value += printk_int(*((int *) args++), opts);
+					if (opts.size == TYPE_CHAR) {
+						ret_value += printk_uint(*((unsigned char *) args++), opts);
+					}
+					else if (opts.size == TYPE_SHORT) {
+						ret_value += printk_uint(*((unsigned short int *) args++), opts);
+					}
+					else if (opts.size == TYPE_DEFAULT || opts.size == TYPE_LONG) {
+						ret_value += printk_uint(*((unsigned int *) args++), opts);
+					}
+					else if (opts.size == TYPE_LONG_LONG) {
+						ret_value += printk_uint(*((unsigned long long int *) args++), opts);
+					}
 				}
 				else if (*fmt == '%') {
 					ret_value++;
 					putchar('%');
 				}
 				else if (*fmt == 'o') {
-					ret_value += printk_oct(*((int *) args++), opts);
+					if (opts.size == TYPE_CHAR) {
+						ret_value += printk_oct(*((unsigned char *) args++), opts);
+					}
+					else if (opts.size == TYPE_SHORT) {
+						ret_value += printk_oct(*((unsigned short int *) args++), opts);
+					}
+					else if (opts.size == TYPE_DEFAULT || opts.size == TYPE_LONG) {
+						ret_value += printk_oct(*((unsigned int *) args++), opts);
+					}
+					else if (opts.size == TYPE_LONG_LONG) {
+						ret_value += printk_oct(*((unsigned long long int *) args++), opts);
+					}
 				}
 				else if (*fmt == 'x' || *fmt == 'X') {
-					ret_value += printk_hex(*((int *) args++), opts, (*fmt == 'x') ? 0 : 1);
+					if (opts.size == TYPE_CHAR) {
+						ret_value += printk_hex(*((unsigned char *) args++), opts, *fmt == 'X');
+					}
+					else if (opts.size == TYPE_SHORT) {
+						ret_value += printk_hex(*((unsigned short int *) args++), opts, *fmt == 'X');
+					}
+					else if (opts.size == TYPE_DEFAULT || opts.size == TYPE_LONG) {
+						ret_value += printk_hex(*((unsigned int *) args++), opts, *fmt == 'X');
+					}
+					else if (opts.size == TYPE_LONG_LONG) {
+						ret_value += printk_hex(*((unsigned long long int *) args++), opts, *fmt == 'X');
+					}
 				}
 				else if (*fmt == 'b') {
-					ret_value += printk_bin(*((int *) args++), opts);
+					if (opts.size == TYPE_CHAR) {
+						ret_value += printk_bin(*((unsigned char *) args++), opts);
+					}
+					else if (opts.size == TYPE_SHORT) {
+						ret_value += printk_bin(*((unsigned short int *) args++), opts);
+					}
+					else if (opts.size == TYPE_DEFAULT || opts.size == TYPE_LONG) {
+						ret_value += printk_bin(*((unsigned int *) args++), opts);
+					}
+					else if (opts.size == TYPE_LONG_LONG) {
+						ret_value += printk_bin(*((unsigned long long int *) args++), opts);
+					}
 				}
 				else if (*fmt == 's') {
 					if (*args == NULL) {

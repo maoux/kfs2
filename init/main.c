@@ -6,7 +6,7 @@ static void		print_grub_meminfo(t_grub_info *grub_info)
 {
 	t_palette_color_info	*palette;
 	t_color					*color;
-	// t_mmap		*mmap;
+	t_mmap		*mmap;
 	uint32_t	flags;
 
 	flags = grub_info->flags;
@@ -54,14 +54,19 @@ static void		print_grub_meminfo(t_grub_info *grub_info)
 			printk(KERN_DEBUG "EGA standard text mode enabled\n");
 		}
 	}
-	// if (IS_GFLAG(flags, GFLAG_MMAP)) {
-	// 	mmap = (t_mmap *)grub_info->mmap_addr;
-	// 	while ((uint32_t)mmap < grub_info->mmap_addr + grub_info->mmap_length) {
-	// 		printk(KERN_DEBUG "mmap struct size: %d\n", mmap->size);
-	// 		printk(KERN_DEBUG "mmap: base addr %010#x - length %d type %d\n", mmap->base_addr_low, mmap->length_low, mmap->type);
-	// 		mmap = (t_mmap *)((uint32_t)mmap + mmap->size + sizeof(uint32_t));
-	// 	}
-	// }
+	if (IS_GFLAG(flags, GFLAG_MMAP)) {
+		mmap = (t_mmap *)grub_info->mmap_addr;
+		printk(KERN_DEBUG "mmap addr : %010#x\n", mmap);
+		printk(KERN_DEBUG "mmap addr : %d\n", grub_info->mmap_length);
+
+		while ((uint32_t)mmap < grub_info->mmap_addr + grub_info->mmap_length) {
+		 	printk(KERN_DEBUG "mmap struct size: %d\n", mmap->size);
+		 	printk(KERN_DEBUG "mmap: base addr %#016x:%016x\n - length %u:%u - type %hd\n",
+			 		mmap->base_addr_high, mmap->base_addr_low,
+					mmap->length_high, mmap->length_low, mmap->type);
+		 	mmap = (t_mmap *)((uint32_t)mmap + mmap->size + sizeof(uint32_t));
+		}
+	}
 }
 
 extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
@@ -74,7 +79,7 @@ extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
 
 	grub_info = (t_grub_info *)meminfo_offset;
 	if (IS_GFLAG(grub_info->flags, GFLAG_FRAMEBUFFER)) {
-		init_video((uint64_t *)grub_info->framebuffer_addr_low,
+		init_video((uint32_t *)grub_info->framebuffer_addr_low,
 		grub_info->framebuffer_width, grub_info->framebuffer_height);
 	}
 	else {
@@ -82,7 +87,7 @@ extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
 			assume video buffer is on location 0xb8000 for now
 			with standard text mode size
 		*/
-		init_video((uint64_t *)0xb8000, 80, 25);
+		init_video((uint32_t *)0xb8000, 80, 25);
 	}
 	printk(KERN_DEBUG "memory info location from grub : %010#x\n", (int)meminfo_offset);
 	print_grub_meminfo(grub_info);

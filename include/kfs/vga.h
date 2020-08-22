@@ -22,12 +22,19 @@ enum vga_colors {
 	VGA_COLOR_WHITE			= 15
 };
 
+# define SCREEN_NUMBER	10
+
 extern void		clear_screen(void);
 extern void		putchar(const unsigned char c);
 extern void		putstring(const char *str);
 extern void		putnbr(int n);
-extern void		putnbr_base(int n, int base, uint8_t uppercase);
+extern void		putunbr(unsigned int n);
+extern void		putnbr_base(int n, unsigned int base, uint8_t uppercase);
+extern void		putunbr_base(unsigned int n, unsigned int base, uint8_t uppercase);
 extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
-extern void		init_video(uint64_t	*framebuffer_addr,  uint32_t width, uint32_t height);
+extern void		init_video(uint32_t	*framebuffer_addr,  uint32_t width, uint32_t height);
+
+extern void		next_screen(void);
+extern void		prev_screen(void);
 
 #endif

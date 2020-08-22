@@ -69,6 +69,12 @@ static void		print_key(uint32_t key, uint32_t status)
 		case 0xe0b8:
 			alt_r = 0;
 			return ;
+		case 0x3d:
+			next_screen();
+			return ;
+		case 0x3c:
+			prev_screen();
+			return ;
 		default:
 			if (key < KEY_MAP_SIZE) {
 				if (shift) {
@@ -84,7 +90,7 @@ static void		print_key(uint32_t key, uint32_t status)
 }
 
 /*
-* TODO add usb legacy check and ACPI check
+* TODO add usb legacy check and ACPI (FADT) check
 */
 extern uint8_t		init_ps2_keyboard(void)
 {
@@ -92,6 +98,9 @@ extern uint8_t		init_ps2_keyboard(void)
 	uint8_t		config;
 	uint8_t		port1_status = 0x01;
 	uint8_t		port2_status = 0x01;
+
+
+	__asm__ volatile("cli;");
 
 	/* disable channel 1 ps2 controller */
 	send_command(0x64, 0xad, 0x00, 0, 0);
@@ -171,11 +180,8 @@ extern uint8_t		init_ps2_keyboard(void)
 
 extern void		keyboard_loop(void)
 {
-	uint8_t		status;
-	uint8_t		key;
-
-
-	__asm__ volatile("cli;");
+	uint8_t			status;
+	uint16_t		key;
 
 	//get scan code set (between 41, 43 or 3f - 1, 2 or 3)
 	key = send_command(0x60, 0xf0, 0x00, 1, 1);
@@ -189,6 +195,11 @@ extern void		keyboard_loop(void)
 		status = wait_ps2_to_read();
 		if (status != 0x01 && status != 0x20) {
 			key = inportb(0x60);
+			if (key == 0xe0) {
+			 	wait_ps2_to_read();
+			 	key = key << 8;	
+			 	key &= (0 | (uint16_t)inportb(0x60));
+			}
 			// if (key == 0x01) {
 			// 	return ;
 			// }
