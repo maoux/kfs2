@@ -1,4 +1,5 @@
-SRCS_INIT_C := main.c\
+SRCS_INIT_C :=	main.c\
+				system.c
 
 SRCS_INIT_S :=
 

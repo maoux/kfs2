@@ -37,4 +37,7 @@ extern void		init_video(uint32_t	*framebuffer_addr,  uint32_t width, uint32_t he
 extern void		next_screen(void);
 extern void		prev_screen(void);
 
+extern void		print_text_mode_intro(void);
+
+
 #endif

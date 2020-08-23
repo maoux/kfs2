@@ -3,7 +3,8 @@
 
 # include <stdint.h>
 
-#define KEY_MAP_SIZE	94
+#define KEY_MAP_SIZE_1	94
+#define KEY_MAP_SIZE_2	127
 
 /*
 * init_ps2_keyboard

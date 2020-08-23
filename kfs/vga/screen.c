@@ -1,7 +1,7 @@
-#include <vga.h>
+#include <kfs/vga.h>
 #include <string.h>
 #include <io.h>
-#include <stdint.h>
+#include <kfs/kernel.h>
 
 size_t *textmemptr;
 char attr = (char)0x0F;
@@ -39,10 +39,10 @@ static void		move_cursor(void)
 	size_t	tmp;
 
 	tmp = csr_y * max_width + csr_x;
-	outportb(0x3D4, 14);
-	outportb(0x3D5, tmp >> 8);
-	outportb(0x3D4, 15);
-	outportb(0x3D5, tmp);
+	outb(0x3D4, 14);
+	outb(0x3D5, tmp >> 8);
+	outb(0x3D4, 15);
+	outb(0x3D5, tmp);
 }
 
 extern void		clear_screen(void)
@@ -114,6 +114,9 @@ extern void		putchar(unsigned char c)
 	scroll();
 	move_cursor();
 }
+
+/*********************************************************/
+/***************** putnbr functions **********************/
 
 extern void		putnbr(int n)
 {
@@ -190,6 +193,9 @@ extern void		putstring(const char *str)
 	}
 }
 
+/*********************************************************/
+/*********************************************************/
+
 extern void		set_textcolor(const unsigned char bg,
 							  const unsigned char fg)
 {
@@ -222,6 +228,18 @@ extern void		prev_screen(void)
 		csr_y = (int)(screens[screen_cursor][1]);
 		move_cursor();
 	}
+}
+
+extern void		print_text_mode_intro(void)
+{
+	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_BLUE);
+	printk(	KERN_NONE	"\t\t\t\t _     __     _\n" 
+ 						"\t\t\t\t| | __/ _|___/ |\n"
+ 						"\t\t\t\t| |/ / |_/ __| |\n"
+ 						"\t\t\t\t|   <|  _\\__ \\ |\n"
+						"\t\t\t\t|_|\\_\\_| |___/_|\n\n");
+	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
+
 }
 
 extern void		init_video(uint32_t	*framebuffer_addr, uint32_t width,

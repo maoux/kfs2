@@ -3,6 +3,7 @@
 #include <kfs/kernel.h>
 #include <kfs/io.h>
 #include <kfs/ps2_controller.h>
+#include <kfs/system.h>
 
 uint8_t		shift = 0;
 uint8_t		ctrl_l = 0;
@@ -10,10 +11,10 @@ uint8_t		ctrl_r = 0;
 uint8_t		alt_l = 0;
 uint8_t		alt_r = 0;
 
-static void		print_key(uint32_t key, uint32_t status);
+static void		print_key(uint32_t key, uint32_t status, uint8_t set);
 
-//US QWERTY standard keyboard set1 lower case
-const char	key_map_1_lower[KEY_MAP_SIZE] = {
+/*US QWERTY standard keyboard set 1 lower case*/
+const char	key_map_1_lower[KEY_MAP_SIZE_1] = {
 	0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
 	0x08, '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']',
 	'\n', 0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
@@ -23,7 +24,8 @@ const char	key_map_1_lower[KEY_MAP_SIZE] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
 
-const char	key_map_1_upper[KEY_MAP_SIZE] = {
+/*US QWERTY standard keyboard set 1 upper case*/
+const char	key_map_1_upper[KEY_MAP_SIZE_1] = {
 	0x0, 0x0, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
 	0x08, '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}',
 	'\n', 0x0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
@@ -33,7 +35,33 @@ const char	key_map_1_upper[KEY_MAP_SIZE] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
 
-static void		print_key(uint32_t key, uint32_t status)
+/*US QWERTY standard keyboard set 2 lower case*/
+const char	key_map_2_lower[KEY_MAP_SIZE_2] = {
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	'\t', '`', 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 'q', '1', 0x0, 0x0, 0x0, 'z',
+	's', 'a', 'w', '2', 0x0, 0x0, 'c', 'x', 'd', 'e', '4', '3', 0x0, 0x0,
+	' ', 'v', 'f', 't', 'r', '5', 0x0, 0x0, 'n', 'b', 'h', 'g', 'y', '6',
+	0x0, 0x0, 0x0, 'm', 'j', 'u', '7', '8', 0x0, 0x0, ',', 'k', 'i', 'o', '0',
+	'9', 0x0, 0x0, '.', '/', 'l', ';', 'p', '-', 0x0, 0x0, 0x0, '\'', 0x0, '[',
+	'=', 0x0, 0x0, 0x0, 0x0, '\n', ']', 0x0, '\\', 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x0, 0x08, 0x0, '1', 0x0, '4', 0x0, '7', 0x0, 0x0, 0x0, '0', '.', '2', '5', '6',
+	'8', '\n', 0x0, 0x0, '+', '3', '-', '*', '9'
+};
+
+/*US QWERTY standard keyboard set 2 upper case*/
+const char	key_map_2_upper[KEY_MAP_SIZE_2] = {
+	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	'\t', '~', 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 'Q', '!', 0x0, 0x0, 0x0, 'Z',
+	'S', 'A', 'W', '@', 0x0, 0x0, 'C', 'X', 'D', 'E', '$', '#', 0x0, 0x0,
+	' ', 'V', 'F', 'T', 'R', '%', 0x0, 0x0, 'N', 'B', 'H', 'G', 'Y', '^',
+	0x0, 0x0, 0x0, 'M', 'J', 'U', '&', '*', 0x0, 0x0, '<', 'K', 'I', 'O', ')',
+	'(', 0x0, 0x0, '>', '?', 'L', ':', 'P', '_', 0x0, 0x0, 0x0, '"', 0x0, '{',
+	'+', 0x0, 0x0, 0x0, 0x0, '\n', '}', 0x0, '|', 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+	0x0, 0x08, 0x0, '1', 0x0, '4', 0x0, '7', 0x0, 0x0, 0x0, '0', '.', '2', '5', '6',
+	'8', '\n', 0x0, 0x0, '+', '3', '-', '*', '9'
+};
+
+static void		print_key(uint32_t key, uint32_t status, uint8_t set)
 {
 	(void)status;
 	switch (key) {
@@ -76,14 +104,27 @@ static void		print_key(uint32_t key, uint32_t status)
 			prev_screen();
 			return ;
 		default:
-			if (key < KEY_MAP_SIZE) {
-				if (shift) {
-					putchar(key_map_1_upper[key]);
-					return ;
+			if (set == 1) {
+				if (key < KEY_MAP_SIZE_1) {
+					if (shift) {
+						putchar(key_map_1_upper[key]);
+						return ;
+					}
+					else {
+						putchar(key_map_1_lower[key]);
+					}
 				}
-				else {
-					putchar(key_map_1_lower[key]);
-				}
+			}
+			else if (set == 2) {
+				if (key < KEY_MAP_SIZE_2) {
+					if (shift) {
+						putchar(key_map_2_upper[key]);
+						return ;
+					}
+					else {
+						putchar(key_map_2_lower[key]);
+					}
+				}				
 			}
 			return ;
 	}
@@ -108,7 +149,7 @@ extern uint8_t		init_ps2_keyboard(void)
 	send_command(0x64, 0xa7, 0x00, 0, 0);
 
 	/* flush output buffer */
-	inportb(0x60);
+	inb(0x60);
 
 	/* read controller configuration byte */
 	wait_ps2_to_write();
@@ -180,30 +221,33 @@ extern uint8_t		init_ps2_keyboard(void)
 
 extern void		keyboard_loop(void)
 {
-	uint8_t			status;
+	uint8_t			status, set = 0;
 	uint16_t		key;
 
 	//get scan code set (between 41, 43 or 3f - 1, 2 or 3)
 	key = send_command(0x60, 0xf0, 0x00, 1, 1);
 	while (key == 0xfa) {
 		wait_ps2_to_read();
-		key = inportb(0x60);
+		key = inb(0x60);
 	}
-	printk(KERN_INFO "Current scan code set : %d\n", (key & 0x07));
+	set = key & 0x07;
+	printk(KERN_INFO "Current scan code set : %d\n", set);
 
 	while (1) {
 		status = wait_ps2_to_read();
 		if (status != 0x01 && status != 0x20) {
-			key = inportb(0x60);
+			key = inb(0x60);
 			if (key == 0xe0) {
 			 	wait_ps2_to_read();
 			 	key = key << 8;	
-			 	key &= (0 | (uint16_t)inportb(0x60));
+			 	key &= (0 | (uint16_t)inb(0x60));
 			}
-			// if (key == 0x01) {
-			// 	return ;
-			// }
-			print_key(key, status);
+			if (key == 0x01) {
+				printk(KERN_INFO "Shutting down...\n");
+				shutdown();
+				return ;
+			}
+			print_key(key, status, set);
 		}
 	}
 }

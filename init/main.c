@@ -69,12 +69,13 @@ static void		print_grub_meminfo(t_grub_info *grub_info)
 	}
 }
 
-extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
+extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
+	uint8_t		debug = 0;
 	t_grub_info	*grub_info;
 
 	if (magic != 0x2badb002) {
-		return (0);
+		return ;
 	}
 
 	grub_info = (t_grub_info *)meminfo_offset;
@@ -89,14 +90,14 @@ extern int		kmain(uint32_t magic, uint32_t *meminfo_offset)
 		*/
 		init_video((uint32_t *)0xb8000, 80, 25);
 	}
-	printk(KERN_DEBUG "memory info location from grub : %010#x\n", (int)meminfo_offset);
-	print_grub_meminfo(grub_info);
+	print_text_mode_intro();
+	if (debug) {
+		print_grub_meminfo(grub_info);
+	}
 
 	if (init_ps2_keyboard() == 1) {
 		printk(KERN_ERR "PS/2 Controller tests failed\n");
-		return (0);
+		return ;
 	}
 	keyboard_loop();
-
-	return (0);
 }

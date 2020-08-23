@@ -32,3 +32,10 @@ Linux xubuntu - 64 bit
 <h2>How to run the project</h2>
 <p>From project's root dir, type <code>make</code> then <code>make install</code></p>
 <p>installation require super user rights</p>
+
+<h2>Shortcut</h2>
+<ul>
+<li><p><code>f2</code> - previous screen</p></li>
+<li><p><code>f3</code> - next screen</p></li>
+<li><p><code>esc</code> - shutdown</p></li>
+</ul>
