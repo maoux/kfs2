@@ -39,5 +39,9 @@ extern void		prev_screen(void);
 
 extern void		print_text_mode_intro(void);
 
+extern void		move_cursor_up(void);
+extern void		move_cursor_right(void);
+extern void		move_cursor_down(void);
+extern void		move_cursor_left(void);
 
 #endif

@@ -3,12 +3,14 @@
 #include <io.h>
 #include <kfs/kernel.h>
 
-size_t *textmemptr;
-char attr = (char)0x0F;
-int	csr_x = 0, csr_y = 0;
+static void		move_cursor(void);
+
+static size_t *textmemptr;
+static char attr = (char)0x0F;
+static int	csr_x = 0, csr_y = 0;
 int max_width, max_height;
-uint8_t	screen_buffer_enabled = 0;
-uint8_t	screen_cursor;
+static uint8_t	screen_buffer_enabled = 0;
+static uint8_t	screen_cursor;
 
 size_t	screens[SCREEN_NUMBER][80 * 25 + 2];
 
@@ -31,6 +33,68 @@ static void		scroll(void)
 			screens[screen_cursor][1] = 24;
 		}
 		csr_y = 24;
+	}
+}
+
+extern void		move_cursor_up(void)
+{
+	if (csr_y > 0) {
+		csr_y--;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][1] = csr_y;
+		}
+		move_cursor();
+	}
+}
+
+extern void		move_cursor_right(void)
+{
+	if (csr_x < max_width - 1) {
+		csr_x++;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][0] = csr_x;
+		}
+		move_cursor();
+	}
+	else if (csr_y < max_height - 1) {
+		csr_x = 0;
+		csr_y++;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][0] = csr_x;
+			screens[screen_cursor][1] = csr_y;
+		}
+		move_cursor();
+	}
+}
+
+extern void		move_cursor_down(void)
+{
+	if (csr_y < max_height - 1) {
+		csr_y++;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][1] = csr_y;
+		}
+		move_cursor();
+	}
+}
+
+extern void		move_cursor_left(void)
+{
+	if (csr_x > 0) {
+		csr_x--;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][0] = csr_x;
+		}
+		move_cursor();
+	}
+	else if (csr_y > 0) {
+		csr_x = max_width - 1;
+		csr_y--;
+		if (screen_buffer_enabled) {
+			screens[screen_cursor][0] = csr_x;
+			screens[screen_cursor][1] = csr_y;
+		}
+		move_cursor();
 	}
 }
 
@@ -65,7 +129,7 @@ extern void		putchar(unsigned char c)
 			csr_x--;
 		}
 		else if (csr_y > 0) {
-			csr_x = 79;
+			csr_x = max_width - 1;
 			csr_y--;
 		}
 		cursor = textmemptr + (csr_y * max_width + csr_x);
@@ -99,7 +163,7 @@ extern void		putchar(unsigned char c)
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][csr_y * max_width + csr_x + 2] = c | (attr << 8);
 		}
-		if (csr_x == 79) {
+		if (csr_x == max_width - 1) {
 			csr_y++;
 			csr_x = 0;
 		}
