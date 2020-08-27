@@ -6,8 +6,8 @@ if [ $? -eq 1 ]; then
 	return 1
 fi
 
-kvm	-m 4G \
-	-curses \
-	-cpu kvm32 \
-	-drive format=raw,file=$DISKNAME,media=disk \
-	-gdb tcp::1234
+sudo qemu-system-i386	-m 4G \
+			-curses \
+			-cpu kvm32 \
+			-drive format=raw,file=$DISKNAME,media=disk \
+			-gdb tcp::1234

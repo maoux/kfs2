@@ -15,19 +15,27 @@ LOOP0=$(sudo losetup -a \
 		| grep "disk.img)$" \
 		| awk '{print $1}' \
 		| sed 's/.$//')
-LOOP1=$(sudo losetup -a \
+
+grep "fr_FR" /etc/default/locale
+if [ $? -eq 0 ]; then
+	LOOP1=$(sudo losetup -a \
+		| grep "disk.img), index" \
+		| awk '{print 	$1}' \
+		| sed 's/.$//')
+else
+	LOOP1=$(sudo losetup -a \
 		| grep "disk.img), offset" \
 		| awk '{print 	$1}' \
 		| sed 's/.$//')
-
+fi
 
 if [ $FIRST = "true" ]; then
 	sudo mke2fs $LOOP1
 #	sudo mkdosfs -F32 -f 2 $LOOP1
 fi
 
-#echo $LOOP0
-#echo $LOOP1
+echo $LOOP0
+echo $LOOP1
 
 sudo mount $LOOP1 /mnt
 
@@ -38,6 +46,7 @@ if [ $FIRST = "true" ]; then
 						$LOOP0
 fi
 
+sudo mkdir -p /mnt/boot/grub
 sudo cp config/grub.cfg /mnt/boot/grub
 sudo cp kfs.bin /mnt/boot
 
