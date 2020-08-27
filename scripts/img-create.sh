@@ -16,15 +16,15 @@ LOOP0=$(sudo losetup -a \
 		| awk '{print $1}' \
 		| sed 's/.$//')
 
-grep "fr_FR" /etc/default/locale
+grep "en_US" /etc/default/locale
 if [ $? -eq 0 ]; then
 	LOOP1=$(sudo losetup -a \
-		| grep "disk.img), index" \
+		| grep "disk.img), offset" \
 		| awk '{print 	$1}' \
 		| sed 's/.$//')
 else
 	LOOP1=$(sudo losetup -a \
-		| grep "disk.img), offset" \
+		| grep "disk.img), index" \
 		| awk '{print 	$1}' \
 		| sed 's/.$//')
 fi
