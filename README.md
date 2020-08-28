@@ -1,17 +1,10 @@
-<h1>KFS1</h1>
+<h1>KFS2</h1>
 <p>Kernel from sratch project: my final 42 branch of project</p>
 <p>KFS1 is the first out of 10 project which leads you to create your very own kernel step by step</p>
 <p>Write a kernel from scratch for x86 32bits arch</p>
 
 <ul>
-<li><p>Create a virtual disk image and install grub on it</p></li>
-<li><p>link and Boot a kernel program minimal code written in asm and C with multiboot header specification</p></li>
-<li><p>Write basic functions helper such as string functions from standard libc etc</p></li>
-<li><p>Create a minimalistic interface between kernel and screen</p></li>
-<li><p>Create a virtual disk image and install grub on it</p></li>
-<li><p>Handle scroll and colors in vga standard text mode</p></li>
-<li><p>Write a basic printf/printk</p></li>
-<li><p>Handle several screens and shortcuts to switch between them</p></li>
+
 </ul>
 
 Linux xubuntu - 64 bit
