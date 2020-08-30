@@ -30,7 +30,7 @@ $(NAME): $(OBJS) $(HEADERS)
 
 $(OBJSDIR)/%.o: %.c
 	@echo "Compiling source file" $^ "to" $@ "..." 
-	@$(CC) $(CFLAGS) $(CRCFLAGS) -c $(IFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) $(CRCFLAGS) $(DEBUGFLAG) -c $(IFLAGS) -o $@ $^
 
 $(OBJSDIR)/%.o: %.asm
 	@echo "Compiling source file" $^ "to" $@ "..." 

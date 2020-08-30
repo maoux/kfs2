@@ -2,6 +2,7 @@
 #include <kfs/mulitboot.h>
 #include <kfs/vga.h>
 #include <kfs/keyboard.h>
+#include <kfs/shell.h>
 
 extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
@@ -36,5 +37,5 @@ extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 		printk(KERN_ERR "PS/2 Controller tests failed\n");
 		return ;
 	}
-	keyboard_loop();
+	shell();
 }

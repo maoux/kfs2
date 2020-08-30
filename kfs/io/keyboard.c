@@ -9,7 +9,7 @@ static uint8_t		shift = 0;
 static uint8_t		ctrl = 0;
 static uint8_t		alt = 0;
 
-static void		print_key(uint32_t key);
+static char		print_key(uint32_t key);
 
 /*US QWERTY standard keyboard set 2 lower case*/
 static const unsigned char	key_map_2_lower[KEY_MAP_SIZE_2] = {
@@ -41,58 +41,57 @@ static const unsigned char	key_map_2_upper[KEY_MAP_SIZE_2] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
 };
 
-static void		print_key(uint32_t key)
+static char		print_key(uint32_t key)
 {
 	switch (key) {
 		case 0x2a:
 		case 0x36:
 			shift = 1;
-			return ;
+			return (0);
 		case 0xaa:
 		case 0xb6:
 			shift = 0;
-			return ;
+			return (0);
 		case 0x1d:
 			ctrl = 1;
-			return ;
+			return (0);
 		case 0x9d:
 			ctrl = 0;
-			return ;
+			return (0);
 		case 0x38:
 			alt = 1;
-			return ;
+			return (0);
 		case 0xb8:
 			alt = 0;
-			return ;
+			return (0);
 		case 0x3d:
 			next_screen();
-			return ;
+			return (0);
 		case 0x3c:
 			prev_screen();
-			return ;
+			return (0);
 		case 0xe048:
 			move_cursor_up();
-			return ;
+			return (0);
 		case 0xe04d:
 			move_cursor_right();
-			return ;
+			return (0);
 		case 0xe050:
 			move_cursor_down();
-			return ;
+			return (0);
 		case 0xe04b:
 			move_cursor_left();
-			return ;
+			return (0);
 		default:
 			if (key < KEY_MAP_SIZE_2) {
 				if (shift) {
-					putchar(key_map_2_upper[key]);
-					return ;
+					return (key_map_2_upper[key]);
 				}
 				else {
-					putchar(key_map_2_lower[key]);
+					return (key_map_2_lower[key]);
 				}
 			}
-			return ;
+			return (0);
 	}
 }
 
@@ -182,6 +181,15 @@ extern uint8_t		init_ps2_keyboard(void)
 	//config |= 0x03;
 	//wait_ps2_to_write();
 	//send_command(0x64, 0x60, config, 1);
+
+	/* set scan code set to 2 */
+	response = send_command(0x60, 0xf0, 0x02, 1, 1);
+	while (response == 0xfe) {
+		wait_ps2_to_read();
+		response = send_command(0x60, 0xf0, 0x02, 1, 1);
+	}
+	printk(KERN_INFO "Current scan code set : %d\n", 2);
+
 	return (0);
 }
 
@@ -189,7 +197,7 @@ extern void		keyboard_loop(void)
 {
 	uint32_t		key, tmp;
 
-	//get scan code set (between 43, 41 or 3f - 1, 2 or 3)
+	/* set scan code set to 2 */
 	tmp = send_command(0x60, 0xf0, 0x02, 1, 1);
 	while (tmp == 0xfe) {
 		wait_ps2_to_read();
@@ -199,7 +207,6 @@ extern void		keyboard_loop(void)
 
 	while (1) {
 		wait_ps2_to_read();
-		/* TODO treat key > 4 bytes */
 		key = inb(0x60);
 		if (key == 0xe0) {
 			wait_ps2_to_read();
@@ -216,4 +223,31 @@ extern void		keyboard_loop(void)
 		}
 		print_key(key);
 	}
+}
+
+/*
+	assume key wont be more than 4 bytes wide ,
+	doesn't handle this behavior yet
+*/
+extern int		read(char *buffer, uint16_t size)
+{
+	uint32_t		key, tmp = 0;
+
+	for (uint16_t i = 0; i < size;) {
+		key = 0;
+		wait_ps2_to_read();
+		key = inb(0x60);
+		if (key == 0xe0) {
+			wait_ps2_to_read();
+			while ((tmp = inb(0x60)) == 0xe0) {
+				wait_ps2_to_read();
+			}
+			key = key << 8;
+			key |= tmp;
+		}
+		if ((tmp = print_key(key)) > 0) {
+			buffer[i++] = (char)tmp;
+		}
+	}
+	return (0);
 }

@@ -16,4 +16,6 @@
 extern uint8_t	init_ps2_keyboard(void);
 extern void		keyboard_loop(void);
 
+extern int		read(char *buffer, uint16_t size);
+
 #endif

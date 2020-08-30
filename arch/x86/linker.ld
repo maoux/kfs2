@@ -25,4 +25,12 @@ SECTIONS
 		*(.COMMON)
 		*(.bss)
 	}
+	.stab BLOCK(4K) : ALIGN(4K)
+	{
+		*(.stab)
+	}
+	.stabstr BLOCK(4K) : ALIGN(4K)
+	{
+		*(.stab)
+	}
 }
