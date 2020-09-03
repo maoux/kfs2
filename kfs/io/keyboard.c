@@ -249,5 +249,5 @@ extern int		read(char *buffer, uint16_t size)
 			buffer[i++] = (char)tmp;
 		}
 	}
-	return (0);
+	return (size);
 }
