@@ -1,5 +1,5 @@
 #include <kfs/kernel.h>
-#include <kfs/mulitboot.h>
+#include <kfs/multiboot.h>
 #include <kfs/vga.h>
 #include <kfs/keyboard.h>
 #include <kfs/shell.h>
@@ -7,7 +7,7 @@
 extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
 	uint8_t		debug = 0;
-	t_grub_info	*grub_info;
+	t_grub_info	*grub_info; 
 
 	if (magic != 0x2badb002) {
 		return ;
