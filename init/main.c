@@ -3,15 +3,20 @@
 #include <kfs/vga.h>
 #include <kfs/keyboard.h>
 #include <kfs/shell.h>
+#include <kfs/gdt.h>
 
 extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
 	uint8_t		debug = 0;
 	t_grub_info	*grub_info; 
 
+
 	if (magic != 0x2badb002) {
 		return ;
 	}
+
+	/* Setup GDT */
+	init_gdt();
 
 	/* Init text mode params with multiboot specs if available */
 	grub_info = (t_grub_info *)meminfo_offset;
