@@ -37,6 +37,7 @@ extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 		print_grub_meminfo(grub_info);
 	}
 
+
 	/* keyboard test and infinite loop (break it with esc key)*/
 	if (init_ps2_keyboard() == 1) {
 		printk(KERN_ERR "PS/2 Controller tests failed\n");

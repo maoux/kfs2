@@ -4,27 +4,24 @@
 # include <stdint.h>
 
 # define GDT_BASE_ADDR	0x00000800
-# define GDT_SIZE		8
-
+# define GDT_SIZE		07
 
 struct gdtr {
-	uint16_t	size;
-	uint32_t	offset;
+    uint16_t size;
+    uint32_t base_addr;
 } __attribute__ ((packed));
 typedef struct gdtr		t_gdtr;
 
-struct gdtdesc {
-	uint16_t	limit0_15;
-	uint16_t	base0_15;
-	uint8_t		base16_23;
-	uint8_t		access;
-	uint8_t		limit16_19;
-	uint8_t		flags;
-	uint8_t		base24_31;
+struct gdt_descriptor {
+    uint16_t limit0_15;
+    uint16_t base0_15;
+    uint8_t base16_23;
+    uint8_t access;
+    uint8_t limit16_19:4;
+    uint8_t flags:4;
+    uint8_t base24_31;
 } __attribute__ ((packed));
-typedef struct gdtdesc	t_gdtdesc;
-
-t_gdtr		_GDTR;
+typedef struct gdt_descriptor	t_gdt_descriptor;
 
 /* present bit, must be set to 1 */
 # define GDTACESS_PR		0x80
@@ -84,6 +81,9 @@ t_gdtr		_GDTR;
 	1; protected 32 bits mode
 */
 # define GDTFLAG_SZ			0x04
+
+/* Globals */
+t_gdtr					_GDTR;
 
 extern void		init_gdt(void);
 extern void		gdt_flush(void);
