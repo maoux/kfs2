@@ -109,7 +109,7 @@ extern void		move_cursor_left(void)
 	}
 }
 
-static void		move_cursor(void)
+extern void		move_cursor(void)
 {
 	size_t	tmp;
 

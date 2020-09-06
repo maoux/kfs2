@@ -9,7 +9,9 @@ static uint8_t		shift = 0;
 static uint8_t		ctrl = 0;
 static uint8_t		alt = 0;
 
-static char		print_key(uint32_t key);
+static char			print_key(uint32_t key);
+static uint8_t		current_shortcut_nbr;
+static t_shortcut	shortcut_map[MAX_SHORTCUT_SIZE];
 
 /*US QWERTY standard keyboard set 2 lower case*/
 static const unsigned char	key_map_2_lower[KEY_MAP_SIZE_2] = {
@@ -43,6 +45,12 @@ static const unsigned char	key_map_2_upper[KEY_MAP_SIZE_2] = {
 
 static char		print_key(uint32_t key)
 {
+	for (uint8_t i = 0; i < current_shortcut_nbr; i++) {
+		if (shortcut_map[i].key == key) {
+			shortcut_map[i].callback();
+			return (0);
+		}
+	}
 	switch (key) {
 		case 0x2a:
 		case 0x36:
@@ -63,30 +71,6 @@ static char		print_key(uint32_t key)
 			return (0);
 		case 0xb8:
 			alt = 0;
-			return (0);
-		case 0x3d: //f3
-			next_screen();
-			return (0);
-		case 0x3c: //f2
-			prev_screen();
-			return (0);
-		case 0x3f: //f5
-			buffer_scroll_up();
-			return (0);
-		case 0x40: //f6
-			buffer_scroll_down();
-			return (0);
-		case 0xe048:
-			move_cursor_up();
-			return (0);
-		case 0xe04d:
-			move_cursor_right();
-			return (0);
-		case 0xe050:
-			move_cursor_down();
-			return (0);
-		case 0xe04b:
-			move_cursor_left();
 			return (0);
 		default:
 			if (key < KEY_MAP_SIZE_2) {
@@ -193,38 +177,34 @@ extern uint8_t		init_ps2_keyboard(void)
 	}
 	printk(KERN_INFO "Current scan code set : %d\n", 2);
 
+	current_shortcut_nbr = 0;
+	load_shortcut(0x3d, next_screen); //f2
+	load_shortcut(0x3c, prev_screen); //f3
+	load_shortcut(0x3f, buffer_scroll_up); //f5
+	load_shortcut(0x40, buffer_scroll_down); //f6
+	/* arrows */
+	// load_shortcut(0xe048, move_cursor_up);
+	// load_shortcut(0xe04d, move_cursor_right);
+	// load_shortcut(0xe050, move_cursor_down);
+	// load_shortcut(0xe04b, move_cursor_left);
 	return (0);
 }
 
-extern void		keyboard_loop(void)
+extern void		load_shortcut(uint32_t shortcut, void (*callback)(void))
 {
-	uint32_t		key, tmp;
-
-	/* set scan code set to 2 */
-	tmp = send_command(0x60, 0xf0, 0x02, 1, 1);
-	while (tmp == 0xfe) {
-		wait_ps2_to_read();
-		tmp = send_command(0x60, 0xf0, 0x02, 1, 1);
-	}
-	printk(KERN_INFO "Current scan code set : %d\n", 2);
-
-	while (1) {
-		wait_ps2_to_read();
-		key = inb(0x60);
-		if (key == 0xe0) {
-			wait_ps2_to_read();
-			while ((tmp = inb(0x60)) == 0xe0) {
-			 	wait_ps2_to_read();
-			}
-			key = key << 8;
-			key |= tmp;
-		}
-		if (key == 0x01) {
-			printk(KERN_INFO "Shutting down...\n");
-			shutdown();
+	for (uint8_t i = 0; i < current_shortcut_nbr; i++) {
+		if (shortcut_map[i].key == shortcut) {
+			shortcut_map[current_shortcut_nbr].callback = callback;
 			return ;
 		}
-		print_key(key);
+	}
+	if (current_shortcut_nbr < MAX_SHORTCUT_SIZE) {
+		shortcut_map[current_shortcut_nbr].key = shortcut;
+		shortcut_map[current_shortcut_nbr].callback = callback;
+		current_shortcut_nbr++;
+	} else {
+		printk(KERN_ERR "Maximum amount of shortcut reached,"
+						" %d key couldn't be mapped", shortcut);
 	}
 }
 
@@ -252,5 +232,5 @@ extern int		read(char *buffer, uint16_t size)
 			buffer[i++] = (char)tmp;
 		}
 	}
-	return (size);
+	return (tmp);
 }
