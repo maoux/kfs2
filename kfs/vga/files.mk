@@ -1,4 +1,5 @@
-SRCS_VGA_C := screen.c
+SRCS_VGA_C :=	screen.c\
+				putnbr.c
 
 SRCS_VGA_A :=
 

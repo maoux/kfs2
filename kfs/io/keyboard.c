@@ -64,11 +64,17 @@ static char		print_key(uint32_t key)
 		case 0xb8:
 			alt = 0;
 			return (0);
-		case 0x3d:
+		case 0x3d: //f3
 			next_screen();
 			return (0);
-		case 0x3c:
+		case 0x3c: //f2
 			prev_screen();
+			return (0);
+		case 0x3f: //f5
+			buffer_scroll_up();
+			return (0);
+		case 0x40: //f6
+			buffer_scroll_down();
 			return (0);
 		case 0xe048:
 			move_cursor_up();

@@ -30,5 +30,7 @@ Linux xubuntu - 64 bit
 <ul>
 <li><p><code>f2</code> - previous screen</p></li>
 <li><p><code>f3</code> - next screen</p></li>
+<li><p><code>f5</code> - scroll up</p></li>
+<li><p><code>f6</code> - scroll down</p></li>
 <li><p><code>esc</code> - shutdown</p></li>
 </ul>

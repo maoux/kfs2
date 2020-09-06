@@ -8,11 +8,13 @@ static void		move_cursor(void);
 static size_t *textmemptr;
 static char attr = (char)0x0F;
 static int	csr_x = 0, csr_y = 0;
-int max_width, max_height;
-static uint8_t	screen_buffer_enabled = 0;
-static uint8_t	screen_cursor;
+static int max_width, max_height;
 
-size_t	screens[SCREEN_NUMBER][80 * 25 + 2];
+static uint8_t	screen_buffer_enabled = 0;
+static uint8_t	screen_cursor; /* current screen being displayed */
+static uint8_t	scroll_cursor; /* current part of buffer being displayed*/
+
+static size_t	screens[SCREEN_NUMBER][80 * MAX_SCROLL * 2 + 3];
 
 static void		scroll(void)
 {
@@ -26,10 +28,19 @@ static void		scroll(void)
 		memsetw(textmemptr + (max_height - tmp) * max_width,
 				blank, max_width);
 		if (screen_buffer_enabled) {
-			memcpy(screens[screen_cursor] + 2, screens[screen_cursor] + 2 + tmp * max_width,
-				   (max_height - tmp) * max_width * 2);
-			memsetw(screens[screen_cursor] + 2 + (max_height - tmp) * max_width,
-					blank, max_width);
+			if (scroll_cursor >= MAX_SCROLL) {
+				/* move everything one line up and erase first line */
+				memcpy(	screens[screen_cursor] + SCREEN_META_DATA_SIZE,
+						screens[screen_cursor] + SCREEN_META_DATA_SIZE + tmp * max_width,
+						(MAX_SCROLL - tmp) * max_width * 2);
+				/* fill last line of screen buffer with blank */
+				memsetw(screens[screen_cursor] + SCREEN_META_DATA_SIZE
+						+ (MAX_SCROLL - tmp) * max_width,
+						blank, max_width);
+			} else {
+				scroll_cursor++;
+				screens[screen_cursor][2] = scroll_cursor;
+			}
 			screens[screen_cursor][1] = 24;
 		}
 		csr_y = 24;
@@ -135,7 +146,7 @@ extern void		putchar(unsigned char c)
 		cursor = textmemptr + (csr_y * max_width + csr_x);
 		*cursor = ' ' | (attr << 8);
 		if (screen_buffer_enabled) {
-			screens[screen_cursor][csr_y * max_width + csr_x + 2] = ' ' | (attr << 8);
+			screens[screen_cursor][(scroll_cursor + csr_y) * max_width + csr_x + SCREEN_META_DATA_SIZE] = ' ' | (attr << 8);
 			screens[screen_cursor][0] = csr_x;
 			screens[screen_cursor][1] = csr_y;
 		}
@@ -161,7 +172,7 @@ extern void		putchar(unsigned char c)
 		cursor = textmemptr + (csr_y * max_width + csr_x);
 		*cursor = c | (attr << 8);
 		if (screen_buffer_enabled) {
-			screens[screen_cursor][csr_y * max_width + csr_x + 2] = c | (attr << 8);
+			screens[screen_cursor][(scroll_cursor  + csr_y) * max_width + csr_x + SCREEN_META_DATA_SIZE] = c | (attr << 8);
 		}
 		if (csr_x == max_width - 1) {
 			csr_y++;
@@ -179,87 +190,6 @@ extern void		putchar(unsigned char c)
 	move_cursor();
 }
 
-/*********************************************************/
-/***************** putnbr functions **********************/
-
-extern void		putnbr(int n)
-{
-	if (n < 0) {
-		putchar('-');
-		putnbr(-n);
-	}
-	if (n < 9) {
-		putchar((char)n + 48);
-		return ;
-	}
-	putnbr(n / 10);
-	putchar((char)(n % 10) + 48);
-}
-
-extern void		putunbr(unsigned int n)
-{
-	if (n < 9) {
-		putchar((char)n + 48);
-		return ;
-	}
-	putnbr(n / 10);
-	putchar((char)(n % 10) + 48);
-}
-
-extern void		putnbr_base(int n, unsigned int base, uint8_t uppercase)
-{
-	static char	uset[16] =	{'0', '1', '2', '3', '4', '5',
-							 '6', '7', '8', '9', 'A', 'B',
-							 'C', 'D', 'E', 'F'};
-	static char	lset[16] =	{'0', '1', '2', '3', '4', '5',
-							 '6', '7', '8', '9', 'a', 'b',
-							 'c', 'd', 'e', 'f'};
-
-	if (base > 16) {
-		return ;
-	}
-	if (n < 0) {
-		putchar('-');
-		putnbr_base(-n, base, uppercase);
-	}
-	if (n < (int)base) {
-		uppercase ? putchar(uset[n]) : putchar(lset[n]);
-		return ;
-	}
-	putnbr_base(n / base, base, uppercase);
-	uppercase ? putchar(uset[n % base]) : putchar(lset[n % base]);	
-}
-
-extern void		putunbr_base(unsigned int n, unsigned int base, uint8_t uppercase)
-{
-	static char	uset[16] =	{'0', '1', '2', '3', '4', '5',
-							 '6', '7', '8', '9', 'A', 'B',
-							 'C', 'D', 'E', 'F'};
-	static char	lset[16] =	{'0', '1', '2', '3', '4', '5',
-							 '6', '7', '8', '9', 'a', 'b',
-							 'c', 'd', 'e', 'f'};
-
-	if (base > 16) {
-		return ;
-	}
-	if (n < base) {
-		uppercase ? putchar(uset[n]) : putchar(lset[n]);
-		return ;
-	}
-	putnbr_base(n / base, base, uppercase);
-	uppercase ? putchar(uset[n % base]) : putchar(lset[n % base]);	
-}
-
-extern void		putstring(const char *str)
-{
-	for (size_t i = 0; str[i]; i++) {
-		putchar((const unsigned char)str[i]);
-	}
-}
-
-/*********************************************************/
-/*********************************************************/
-
 extern void		set_textcolor(const unsigned char bg,
 							  const unsigned char fg)
 {
@@ -268,11 +198,12 @@ extern void		set_textcolor(const unsigned char bg,
 
 extern void		next_screen(void)
 {
-	if (screen_buffer_enabled && screen_cursor < SCREEN_NUMBER) {
+	if (screen_buffer_enabled && screen_cursor < SCREEN_NUMBER - 1) {
 		screen_cursor++;
 		clear_screen();
+		scroll_cursor = (int)(screens[screen_cursor][2]);
 		for (int i = 0; i < max_width * max_height; i++) {
-			*(textmemptr + i) = screens[screen_cursor][i + 2];
+			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
 		}
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
@@ -285,8 +216,40 @@ extern void		prev_screen(void)
 	if (screen_buffer_enabled && screen_cursor > 0) {
 		screen_cursor--;
 		clear_screen();
+		scroll_cursor = (int)(screens[screen_cursor][2]);
 		for (int i = 0; i < max_width * max_height; i++) {
-			*(textmemptr + i) = screens[screen_cursor][i + 2];
+			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
+		}
+		csr_x = (int)(screens[screen_cursor][0]);
+		csr_y = (int)(screens[screen_cursor][1]);
+		scroll_cursor = (int)(screens[screen_cursor][2]);
+		move_cursor();
+	}
+}
+
+extern void		buffer_scroll_up(void)
+{
+	if (screen_buffer_enabled && scroll_cursor > 0) {
+		scroll_cursor--;
+		screens[screen_cursor][2]--;
+		clear_screen();
+		for (int i = 0; i < max_width * max_height; i++) {
+			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
+		}
+		csr_x = (int)(screens[screen_cursor][0]);
+		csr_y = (int)(screens[screen_cursor][1]);
+		move_cursor();
+	}
+}
+
+extern void		buffer_scroll_down(void)
+{
+	if (screen_buffer_enabled && scroll_cursor < MAX_SCROLL) {
+		scroll_cursor++;
+		screens[screen_cursor][2]++;
+		clear_screen();
+		for (int i = 0; i < max_width * max_height; i++) {
+			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
 		}
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
@@ -297,13 +260,11 @@ extern void		prev_screen(void)
 extern void		print_text_mode_intro(void)
 {
 	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_BLUE);
-	printk(	KERN_NONE	"\t\t\t\t _     __     _\n" 
- 						"\t\t\t\t| | __/ _|___/ |\n"
- 						"\t\t\t\t| |/ / |_/ __| |\n"
- 						"\t\t\t\t|   <|  _\\__ \\ |\n"
-						"\t\t\t\t|_|\\_\\_| |___/_|\n\n");
+	printk(	KERN_NONE	"\t\t\t\t _    __    ___\n" 
+						"\t\t\t\t| |__/ _|__|_  )\n"
+						"\t\t\t\t| / /  _ (_</ /\n"
+						"\t\t\t\t|_\\_\\_| /__/___|\n\n");
 	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
-
 }
 
 extern void		init_video(uint32_t	*framebuffer_addr, uint32_t width,
@@ -315,6 +276,7 @@ extern void		init_video(uint32_t	*framebuffer_addr, uint32_t width,
 	if (max_width == 80 && max_height == 25) {
 		screen_buffer_enabled = 1;
 		screen_cursor = 0;
+		scroll_cursor = 0;
 	}
 	clear_screen();
 }

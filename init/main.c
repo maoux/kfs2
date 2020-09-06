@@ -7,7 +7,7 @@
 
 extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
-	uint8_t		debug = 0;
+	uint8_t		debug = 1;
 	t_grub_info	*grub_info; 
 
 

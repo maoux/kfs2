@@ -22,7 +22,10 @@ enum vga_colors {
 	VGA_COLOR_WHITE			= 15
 };
 
-# define SCREEN_NUMBER	10
+/* multi screens and scroll */
+# define SCREEN_NUMBER			4
+# define MAX_SCROLL				25
+# define SCREEN_META_DATA_SIZE	3
 
 extern void		clear_screen(void);
 extern void		putchar(const unsigned char c);
@@ -43,5 +46,8 @@ extern void		move_cursor_up(void);
 extern void		move_cursor_right(void);
 extern void		move_cursor_down(void);
 extern void		move_cursor_left(void);
+
+extern void		buffer_scroll_up(void);
+extern void		buffer_scroll_down(void);
 
 #endif

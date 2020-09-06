@@ -2,8 +2,8 @@
 
 ;declare constant for the multiboot header
 MBALIGN		equ 1 << 0 ;aligns modules on 4Kb pages boundaries
-;MEMINFO		equ 1 << 1 ;if mem_* is present, include it
-FLAGS		equ MBALIGN ; | MEMINFO 
+MEMINFO		equ 1 << 1 ;if mem_* is present, include it
+FLAGS		equ MBALIGN  | MEMINFO 
 MAGIC		equ 0x1BADB002
 CHECKSUM	equ -(MAGIC + FLAGS)
 
