@@ -3,8 +3,6 @@
 #include <io.h>
 #include <kfs/kernel.h>
 
-static void		move_cursor(void);
-
 static size_t *textmemptr;
 static char attr = (char)0x0F;
 static int	csr_x = 0, csr_y = 0;
@@ -24,7 +22,7 @@ static void		scroll(void)
 	if (csr_y >= max_height) {
 		tmp = csr_y - max_height + 1;
 		memcpy(textmemptr, textmemptr + tmp * max_width,
-			   (max_height - tmp) * max_width * 2);
+			   (max_height - tmp) * max_width * 2); //16 bits char (x2)
 		memsetw(textmemptr + (max_height - tmp) * max_width,
 				blank, max_width);
 		if (screen_buffer_enabled) {
@@ -32,10 +30,10 @@ static void		scroll(void)
 				/* move everything one line up and erase first line */
 				memcpy(	screens[screen_cursor] + SCREEN_META_DATA_SIZE,
 						screens[screen_cursor] + SCREEN_META_DATA_SIZE + tmp * max_width,
-						(MAX_SCROLL - tmp) * max_width * 2);
+						(MAX_SCROLL + max_height - tmp) * max_width * 2);
 				/* fill last line of screen buffer with blank */
 				memsetw(screens[screen_cursor] + SCREEN_META_DATA_SIZE
-						+ (MAX_SCROLL - tmp) * max_width,
+						+ (MAX_SCROLL + max_height - tmp) * max_width,
 						blank, max_width);
 			} else {
 				scroll_cursor++;
