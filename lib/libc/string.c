@@ -37,7 +37,7 @@ extern void		*memcpy(void *dest, const void *src, size_t n)
 	unsigned char	*cdest = (unsigned char *)dest;
 	unsigned char	*csrc = (unsigned char *)src;
 
-	for(size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		*(cdest + i) = *(csrc + i);
 	}
 	return dest;
@@ -49,10 +49,10 @@ extern void		*memmove(void *dest, const void *src, size_t n)
 	unsigned char	*cdest = (unsigned char *)dest;
 	unsigned char	*csrc = (unsigned char *)src;
 
-	for(size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		buffer[i] = *(csrc + i);
 	}
-	for(size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		*(cdest + i) = buffer[i];
 	}
 	return dest;

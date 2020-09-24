@@ -28,10 +28,8 @@ enum vga_colors {
 # define SCREEN_META_DATA_SIZE	3
 
 
-extern void		init_video(uint32_t	*framebuffer_addr,  uint32_t width, uint32_t height);
-extern void		set_textcolor(const unsigned char bg, const unsigned char fc);
-
-extern void		clear_screen(void);
+extern void		video_init(uint32_t	*framebuffer_addr,  uint32_t width, uint32_t height);
+extern void		textcolor_set(const unsigned char bg, const unsigned char fc);
 
 extern void		putchar(const unsigned char c);
 extern void		putstring(const char *str);
@@ -40,16 +38,19 @@ extern void		putunbr(unsigned int n);
 extern void		putnbr_base(int n, unsigned int base, uint8_t uppercase);
 extern void		putunbr_base(unsigned int n, unsigned int base, uint8_t uppercase);
 
-extern void		next_screen(void);
-extern void		prev_screen(void);
+extern void		screen_next(void);
+extern void		screen_prev(void);
+extern void		screen_clear(void);
 
-extern void		print_text_mode_intro(void);
+extern void		text_mode_intro_print(void);
 
-extern void		move_cursor(void);
-extern void		move_cursor_up(void);
-extern void		move_cursor_right(void);
-extern void		move_cursor_down(void);
-extern void		move_cursor_left(void);
+extern void		cursor_enable(void);
+extern void		cursor_disable(void);
+extern void		cursor_move(void);
+extern void		cursor_move_up(void);
+extern void		cursor_move_right(void);
+extern void		cursor_move_down(void);
+extern void		cursor_move_left(void);
 
 extern void		buffer_scroll_up(void);
 extern void		buffer_scroll_down(void);

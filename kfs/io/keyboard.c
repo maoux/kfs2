@@ -88,7 +88,7 @@ static char		print_key(uint32_t key)
 /*
 * TODO add usb legacy check and ACPI (FADT) check
 */
-extern uint8_t		init_ps2_keyboard(void)
+extern uint8_t		ps2_keyboard_init(void)
 {
 	uint8_t		response;
 	uint8_t		config;
@@ -178,24 +178,24 @@ extern uint8_t		init_ps2_keyboard(void)
 	printk(KERN_INFO "Current scan code set : %d\n", 2);
 
 	current_shortcut_nbr = 0;
-	load_shortcut(0x3d, next_screen); //f2
-	load_shortcut(0x3c, prev_screen); //f3
-	load_shortcut(0x3f, buffer_scroll_up); //f5
-	load_shortcut(0x40, buffer_scroll_down); //f6
+	shortcut_load(0x3d, screen_next); //f2
+	shortcut_load(0x3c, screen_prev); //f3
+	shortcut_load(0x3f, buffer_scroll_up); //f5
+	shortcut_load(0x40, buffer_scroll_down); //f6
 	/* arrows */
-	// load_shortcut(0xe048, move_cursor_up);
-	// load_shortcut(0xe04d, move_cursor_right);
-	// load_shortcut(0xe050, move_cursor_down);
-	// load_shortcut(0xe04b, move_cursor_left);
+	// load_shortcut(0xe048, cursor_move_up);
+	// load_shortcut(0xe04d, cursor_move_right);
+	// load_shortcut(0xe050, cursor_move_down);
+	// load_shortcut(0xe04b, cursor_move_left);
 	return (0);
 }
 
-extern void		load_shortcut(uint32_t shortcut, void (*callback)(void))
+extern int		shortcut_load(uint32_t shortcut, void (*callback)(void))
 {
 	for (uint8_t i = 0; i < current_shortcut_nbr; i++) {
 		if (shortcut_map[i].key == shortcut) {
 			shortcut_map[current_shortcut_nbr].callback = callback;
-			return ;
+			return (0);
 		}
 	}
 	if (current_shortcut_nbr < MAX_SHORTCUT_SIZE) {
@@ -203,34 +203,36 @@ extern void		load_shortcut(uint32_t shortcut, void (*callback)(void))
 		shortcut_map[current_shortcut_nbr].callback = callback;
 		current_shortcut_nbr++;
 	} else {
-		printk(KERN_ERR "Maximum amount of shortcut reached,"
-						" %d key couldn't be mapped", shortcut);
+		return (1);
 	}
+	return (0);
 }
 
 /*
 	assume key wont be more than 4 bytes wide ,
 	doesn't handle this behavior yet
 */
-extern int		read(char *buffer, uint16_t size)
+//extern int		read(char *buffer, uint16_t size)
+extern int		read(void)
 {
 	uint32_t		key, tmp = 0;
 
-	for (uint16_t i = 0; i < size;) {
-		key = 0;
+//	for (uint16_t i = 0; i < size;) {
+	key = 0;
+	wait_ps2_to_read();
+	key = inb(0x60);
+	if (key == 0xe0) {
 		wait_ps2_to_read();
-		key = inb(0x60);
-		if (key == 0xe0) {
+		while ((tmp = inb(0x60)) == 0xe0) {
 			wait_ps2_to_read();
-			while ((tmp = inb(0x60)) == 0xe0) {
-				wait_ps2_to_read();
-			}
-			key = key << 8;
-			key |= tmp;
 		}
-		if ((tmp = print_key(key)) > 0) {
-			buffer[i++] = (char)tmp;
-		}
+		key = key << 8;
+		key |= tmp;
 	}
+	tmp = print_key(key);
+// 		if ((tmp = print_key(key)) > 0) {
+// 			buffer[i++] = (char)tmp;
+// 		}
+//	}
 	return (tmp);
 }

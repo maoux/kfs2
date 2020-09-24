@@ -16,17 +16,17 @@ static void		init_segment_descriptor(t_gdt_descriptor *descriptor,
 
 /*
 	kernel code:	access = 0x9a <=> 0b10011010
-					flags = 0x04
+					flags = 0x0c
 	kernel data:	access = 0x92 <=> 0b10010010
-					flags = 0x04
+					flags = 0x0c
 	kernel stack:	access = 0x96 <=> 0b10011010
-					flags = 0x04
+					flags = 0x0c
 	user code:		access = 0xfa <=> 0b11111010
-					flags = 0x04
+					flags = 0x0c
 	user data:		access = 0xf2 <=> 0b11110010
-					flags = 0x04
+					flags = 0x0c
 	user stack:		access = 0xf6 <=> 0b11111010
-					flags = 0x04
+					flags = 0x0c
 */
 extern void		init_gdt(void)
 {
@@ -34,13 +34,13 @@ extern void		init_gdt(void)
 
     init_segment_descriptor(&gdt[0], 0x0, 0x0, 0x0, 0x0);
 
-    init_segment_descriptor(&gdt[1], 0x0, 0xffffffff, 0x9a, 0x0c);
-    init_segment_descriptor(&gdt[2], 0x0, 0xffffffff, 0x92, 0x0c);
-    init_segment_descriptor(&gdt[3], 0x0, 0xffffffff, 0x96, 0x0c);
+    init_segment_descriptor(&gdt[1], 0x0, 0xffffffff, 0x9b, 0x0c);
+    init_segment_descriptor(&gdt[2], 0x0, 0xffffffff, 0x93, 0x0c);
+    init_segment_descriptor(&gdt[3], 0x0, 0xffffffff, 0x97, 0x0c);
 
-    init_segment_descriptor(&gdt[4], 0x0, 0xffffffff, 0xFe, 0x0c);
-    init_segment_descriptor(&gdt[5], 0x0, 0xffffffff, 0xF2, 0x0c);
-    init_segment_descriptor(&gdt[6], 0x0, 0xffffffff, 0xF6, 0x0c);
+    init_segment_descriptor(&gdt[4], 0x0, 0xffffffff, 0xFf, 0x0c);
+    init_segment_descriptor(&gdt[5], 0x0, 0xffffffff, 0xF3, 0x0c);
+    init_segment_descriptor(&gdt[6], 0x0, 0xffffffff, 0xF7, 0x0c);
 
     _GDTR.size = sizeof(gdt[0]) * GDT_SIZE;
     _GDTR.base_addr = GDT_BASE_ADDR;

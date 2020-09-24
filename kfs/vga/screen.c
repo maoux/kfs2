@@ -8,9 +8,11 @@ static char attr = (char)0x0F;
 static int	csr_x = 0, csr_y = 0;
 static int max_width, max_height;
 
+static uint8_t	cursor_enabled = 1;
 static uint8_t	screen_buffer_enabled = 0;
 static uint8_t	screen_cursor; /* current screen being displayed */
 static uint8_t	scroll_cursor; /* current part of buffer being displayed*/
+
 
 static size_t	screens[SCREEN_NUMBER][80 * MAX_SCROLL * 2 + 3];
 
@@ -45,25 +47,25 @@ static void		scroll(void)
 	}
 }
 
-extern void		move_cursor_up(void)
+extern void		cursor_move_up(void)
 {
 	if (csr_y > 0) {
 		csr_y--;
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][1] = csr_y;
 		}
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		move_cursor_right(void)
+extern void		cursor_move_right(void)
 {
 	if (csr_x < max_width - 1) {
 		csr_x++;
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][0] = csr_x;
 		}
-		move_cursor();
+		cursor_move();
 	}
 	else if (csr_y < max_height - 1) {
 		csr_x = 0;
@@ -72,29 +74,29 @@ extern void		move_cursor_right(void)
 			screens[screen_cursor][0] = csr_x;
 			screens[screen_cursor][1] = csr_y;
 		}
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		move_cursor_down(void)
+extern void		cursor_move_down(void)
 {
 	if (csr_y < max_height - 1) {
 		csr_y++;
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][1] = csr_y;
 		}
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		move_cursor_left(void)
+extern void		cursor_move_left(void)
 {
 	if (csr_x > 0) {
 		csr_x--;
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][0] = csr_x;
 		}
-		move_cursor();
+		cursor_move();
 	}
 	else if (csr_y > 0) {
 		csr_x = max_width - 1;
@@ -103,22 +105,37 @@ extern void		move_cursor_left(void)
 			screens[screen_cursor][0] = csr_x;
 			screens[screen_cursor][1] = csr_y;
 		}
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		move_cursor(void)
+extern void		cursor_move(void)
 {
 	size_t	tmp;
 
-	tmp = csr_y * max_width + csr_x;
-	outb(0x3D4, 14);
-	outb(0x3D5, tmp >> 8);
-	outb(0x3D4, 15);
-	outb(0x3D5, tmp);
+	if (cursor_enabled == 1) {
+		tmp = csr_y * max_width + csr_x;
+		outb(0x3D4, 14);
+		outb(0x3D5, tmp >> 8);
+		outb(0x3D4, 15);
+		outb(0x3D5, tmp);
+	}
 }
 
-extern void		clear_screen(void)
+extern void		cursor_disable(void)
+{
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, 0x20);
+	cursor_enabled = 0;
+}
+
+extern void		cursor_enable(void)
+{
+	cursor_enabled = 1;
+	cursor_move();
+}
+
+extern void		screen_clear(void)
 {
 	unsigned char	blank;
 
@@ -126,7 +143,7 @@ extern void		clear_screen(void)
 	memsetw(textmemptr, blank, max_width * max_height);
 	csr_x = 0;
 	csr_y = 0;
-	move_cursor();
+	cursor_move();
 }
 
 extern void		putchar(unsigned char c)
@@ -185,35 +202,35 @@ extern void		putchar(unsigned char c)
 		}
 	}
 	scroll();
-	move_cursor();
+	cursor_move();
 }
 
-extern void		set_textcolor(const unsigned char bg,
+extern void		textcolor_set(const unsigned char bg,
 							  const unsigned char fg)
 {
 	attr = (bg << 4) | (fg & 0x0F);
 }
 
-extern void		next_screen(void)
+extern void		screen_next(void)
 {
 	if (screen_buffer_enabled && screen_cursor < SCREEN_NUMBER - 1) {
 		screen_cursor++;
-		clear_screen();
+		screen_clear();
 		scroll_cursor = (int)(screens[screen_cursor][2]);
 		for (int i = 0; i < max_width * max_height; i++) {
 			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
 		}
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		prev_screen(void)
+extern void		screen_prev(void)
 {
 	if (screen_buffer_enabled && screen_cursor > 0) {
 		screen_cursor--;
-		clear_screen();
+		screen_clear();
 		scroll_cursor = (int)(screens[screen_cursor][2]);
 		for (int i = 0; i < max_width * max_height; i++) {
 			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
@@ -221,7 +238,7 @@ extern void		prev_screen(void)
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
 		scroll_cursor = (int)(screens[screen_cursor][2]);
-		move_cursor();
+		cursor_move();
 	}
 }
 
@@ -230,13 +247,13 @@ extern void		buffer_scroll_up(void)
 	if (screen_buffer_enabled && scroll_cursor > 0) {
 		scroll_cursor--;
 		screens[screen_cursor][2]--;
-		clear_screen();
+		screen_clear();
 		for (int i = 0; i < max_width * max_height; i++) {
 			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
 		}
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
-		move_cursor();
+		cursor_move();
 	}
 }
 
@@ -245,27 +262,27 @@ extern void		buffer_scroll_down(void)
 	if (screen_buffer_enabled && scroll_cursor < MAX_SCROLL) {
 		scroll_cursor++;
 		screens[screen_cursor][2]++;
-		clear_screen();
+		screen_clear();
 		for (int i = 0; i < max_width * max_height; i++) {
 			*(textmemptr + i) = screens[screen_cursor][(scroll_cursor * max_width) + i + SCREEN_META_DATA_SIZE];
 		}
 		csr_x = (int)(screens[screen_cursor][0]);
 		csr_y = (int)(screens[screen_cursor][1]);
-		move_cursor();
+		cursor_move();
 	}
 }
 
-extern void		print_text_mode_intro(void)
+extern void		text_mode_intro_print(void)
 {
-	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_BLUE);
+	textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_BLUE);
 	printk(	KERN_NONE	"\t\t\t\t _    __    ___\n" 
 						"\t\t\t\t| |__/ _|__|_  )\n"
 						"\t\t\t\t| / /  _ (_</ /\n"
 						"\t\t\t\t|_\\_\\_| /__/___|\n\n");
-	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
+	textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
 }
 
-extern void		init_video(uint32_t	*framebuffer_addr, uint32_t width,
+extern void		video_init(uint32_t	*framebuffer_addr, uint32_t width,
 							uint32_t height)
 {
 	textmemptr = (size_t *)framebuffer_addr;
@@ -276,5 +293,5 @@ extern void		init_video(uint32_t	*framebuffer_addr, uint32_t width,
 		screen_cursor = 0;
 		scroll_cursor = 0;
 	}
-	clear_screen();
+	screen_clear();
 }

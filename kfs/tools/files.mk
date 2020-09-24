@@ -1,5 +1,6 @@
 SRCS_TOOLS_C =	printk.c\
-				shell.c
+				shell.c\
+				builtin.c
 
 SRCS_TOOLS_A =
 

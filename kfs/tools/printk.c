@@ -52,30 +52,30 @@ static void		print_log_prefix(char c)
 		return ;
 	}
 	else if (c == *KERN_NOTICE) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_GREEN);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_GREEN);
 		putstring("NOTICE: ");
 	}
 	else if (c == *KERN_WARNING) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_BROWN);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_BROWN);
 		putstring("WARNING: ");
 	}
 	else if (c == *KERN_ERR) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_MAGENTA);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_MAGENTA);
 		putstring("ERROR: ");
 	}
 	else if (c == *KERN_CRIT) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_MAGENTA);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_MAGENTA);
 		putstring("CRITICAL: ");
 	}
 	else if (c == *KERN_ALERT) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_RED);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_RED);
 		putstring("ALERT: ");
 	}
 	else if (c == *KERN_EMERG) {
-		set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_RED);
+		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_RED);
 		putstring("EMERGENCY: ");
 	}
-	set_textcolor(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
+	textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
 }
 
 

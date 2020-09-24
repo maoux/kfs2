@@ -1,8 +1,8 @@
 #ifndef __SHELL_H__
 # define __SHELL_H__
 
-# define BUF_SIZE	1024
-# define MAX_LINE	250
+# define BUF_SIZE	256
+
 struct shell_cmd {
 	const char	*cmd;
 	int			(*f)(char **opts);
