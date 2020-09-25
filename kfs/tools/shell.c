@@ -17,13 +17,14 @@ static char		buffer[BUF_SIZE];
 static uint16_t	pos;
 static uint8_t		cmds_nbr = 1;
 static t_shell_cmd	cmds[] = {
-	{.cmd = "shutdown", .f = builtin_shutdown}
+	{.cmd = "shutdown", .f = builtin_shutdown},
+	{.cmd = "halt", .f = builtin_shutdown}
 };
 
 
 static void		prompt(void)
 {
-	printk(KERN_NONE "$> ");
+	printk("$> ");
 }
 
 static void		shell_cursor_move_right(void)
@@ -75,27 +76,41 @@ static char		*parse_word(char **line)
 		(*line)++;
 	}
 	w = *line;
-	while (**line && (**line != ' ' || **line != '\t'
-			|| **line != '\n')) {
+	while (**line && **line != ' ' && **line != '\t'
+			&& **line != '\n') {
 		(*line)++;		
 	}
 	if (**line) {
 		**line = '\0';
+		do {
+			(*line)++;
+		} while (**line && (**line == ' ' || **line == '\t'));
 	}
 	return (w);
 }
 
+#define BUF_SIZE_OPTS (BUF_SIZE / 2 - 2)
+
 static int		line_exec(char *line)
 {
-	char		*tmp;
+	char		*cmd;
+	char		*opts[BUF_SIZE_OPTS];
+	size_t		i = 0;
 
-	tmp = parse_word(&line);
+	cmd = parse_word(&line);
+	while (*line) {
+		opts[i++] = parse_word(&line);
+	}
+	opts[i] = NULL;
+	if (!strcmp(cmd, "")) {
+		return (0);
+	}
 	for (uint8_t i = 0; i < cmds_nbr; i++) {
-		if (!strcmp(tmp, cmds[i].cmd)) {
-			return (cmds[i].f(NULL));
+		if (!strcmp(cmd, cmds[i].cmd)) {
+		 	return (cmds[i].f(opts));
 		}
 	}
-	printk(KERN_NONE "Error: %s: command not found\n", tmp);
+	printk("Error: %s: command not found\n", cmd);
 	return (1);
 }
 
