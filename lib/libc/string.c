@@ -121,22 +121,26 @@ extern char		*strchr(const char *str, int c)
 
 extern int		strcmp(const char *str1, const char *str2)
 {
-	for (size_t i = 0; str1[i] && str2[i]; i++) {
+	size_t		i;
+
+	for (i = 0; str1[i] && str2[i]; i++) {
 		if (*(str1 + i) != *(str2 + i)) {
-			return (*(str1 + i) - *(str2 + i));
+			break ;
 		}
 	}
-	return (0);
+	return (*(str1 + i) - *(str2 + i));
 }
 
 extern int		strncmp(const char *str1, const char *str2, size_t n)
 {
-	for (size_t i = 0; str1[i] && str2[i] && i < n; i++) {
+	size_t		i;
+
+	for (i = 0; str1[i] && str2[i] && i < n; i++) {
 		if (*(str1 + i) != *(str2 + i)) {
-			return (*(str1 + i) - *(str2 + i));
+			break ;
 		}
 	}
-	return (0);
+	return (*(str1 + i) - *(str2 + i));
 }
 
 

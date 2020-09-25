@@ -6,7 +6,8 @@ extern void		putnbr(int n)
 {
 	if (n < 0) {
 		putchar('-');
-		putnbr(-n);
+		putnbr(n * -1);
+		return ;
 	}
 	if (n < 9) {
 		putchar((char)n + 48);
@@ -41,6 +42,7 @@ extern void		putnbr_base(int n, unsigned int base, uint8_t uppercase)
 	if (n < 0) {
 		putchar('-');
 		putnbr_base(-n, base, uppercase);
+		return ;
 	}
 	if (n < (int)base) {
 		uppercase ? putchar(uset[n]) : putchar(lset[n]);
