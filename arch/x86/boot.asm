@@ -30,6 +30,7 @@ section .text
 _start:
 
 	mov esp, stack_top
+	xor ebp, ebp
 
 	push ebx
 	push eax
