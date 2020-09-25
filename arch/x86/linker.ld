@@ -31,6 +31,6 @@ SECTIONS
 	}
 	.stabstr BLOCK(4K) : ALIGN(4K)
 	{
-		*(.stab)
+		*(.stabstr)
 	}
 }
