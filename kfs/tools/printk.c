@@ -35,21 +35,21 @@ static size_t	printk_char(char c);
 static size_t	printk_string(char *str);
 
 static void		pad(size_t len, char c);
-static void		print_log_prefix(char c);
+static uint8_t	print_log_prefix(char c);
 
 
-static void		print_log_prefix(char c)
+static uint8_t	print_log_prefix(char c)
 {
 	if (c == *KERN_NONE) {
-		return ;
+		return (1);
 	}
 	if (c == *KERN_DEBUG) {
 		putstring("LOG DEBUG: ");
-		return ;
+		return (1);
 	}
 	else if (c == *KERN_INFO) {
 		putstring("LOG INFO: ");
-		return ;
+		return (1);
 	}
 	else if (c == *KERN_NOTICE) {
 		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_LIGHT_GREEN);
@@ -74,8 +74,11 @@ static void		print_log_prefix(char c)
 	else if (c == *KERN_EMERG) {
 		textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_RED);
 		putstring("EMERGENCY: ");
+	} else {
+		return (0);
 	}
 	textcolor_set(VGA_COLOR_BLACK, VGA_COLOR_WHITE);
+	return (1);
 }
 
 
@@ -258,7 +261,7 @@ extern int	printk(const char *fmt, ...)
 	if (!fmt) {
 		return (0);
 	}
-	print_log_prefix(*fmt++);
+	fmt += print_log_prefix(*fmt);
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
 			fmt++;
