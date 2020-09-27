@@ -27,6 +27,7 @@ include $(ARCHDIR)/$(ARCH)/files.mk
 include $(INITDIR)/files.mk
 include $(KERNELDIR)/files.mk
 
+#scripts
 $(shell mkdir -p $(OBJSDIR))
 
 
@@ -44,11 +45,11 @@ $(NAME): $(OBJS) $(HEADERS)
 
 $(OBJSDIR)/%.o: %.c
 	@echo "Compiling source file" $^ "to" $@ "..." 
-	@$(CC) $(CFLAGS) $(CRCFLAGS) $(DEBUGFLAG) -c $(IFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) $(CRCFLAGS) $(DEBUGFLAGS) -c $(IFLAGS) -o $@ $^
 
 $(OBJSDIR)/%.o: %.asm
 	@echo "Compiling source file" $^ "to" $@ "..." 
-	@$(AS) $(ASFLAGS) -o $@ $^
+	@$(AS) $(DEBUGFLAGS) $(ASFLAGS) -o $@ $^
 
 clean:
 	@echo "Cleaning" $(OBJSDIR) "..."
