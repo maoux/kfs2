@@ -19,7 +19,7 @@ extern void		shell(void);
 extern int		builtin_shutdown(char **opts);
 extern int		builtin_reboot(char **opts);
 extern int		builtin_stack_print(char **opts);
-
+extern int		builtin_print_options(char **opts);
 
 extern void		stack_print(void);
 #endif

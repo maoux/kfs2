@@ -15,13 +15,14 @@ static int		line_exec(char *line);
 
 static char		buffer[BUF_SIZE];
 static uint16_t	pos;
-static uint8_t		cmds_nbr = 5;
+static uint8_t		cmds_nbr = 6;
 static t_shell_cmd	cmds[] = {
 	{.cmd = "shutdown", .f = builtin_shutdown},
 	{.cmd = "halt", .f = builtin_shutdown},
 	{.cmd = "reboot", .f = builtin_reboot},
-	{.cmd = "print_stack", .f = builtin_stack_print},
-	{.cmd = "bt", .f = builtin_stack_print}
+	{.cmd = "print-stack", .f = builtin_stack_print},
+	{.cmd = "bt", .f = builtin_stack_print},
+	{.cmd = "opts", .f = builtin_print_options}
 };
 
 
@@ -102,7 +103,8 @@ static int		line_exec(char *line)
 
 	cmd = parse_word(&line);
 	while (*line) {
-		opts[i++] = parse_word(&line);
+		opts[i] = parse_word(&line);
+		i++;
 	}
 	opts[i] = NULL;
 	if (!strcmp(cmd, "")) {

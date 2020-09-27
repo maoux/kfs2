@@ -17,8 +17,15 @@ extern int		builtin_shutdown(char **opts)
 extern int		builtin_reboot(char **opts)
 {
 	(void)(opts);
-	reboot();
 	return (SH_SUCCESS);
+}
+
+extern int		builtin_print_options(char **opts)
+{
+	for (int i = 0; opts[i]; i++) {
+		printk("%s\n", opts[i]);
+	}
+	return (0);
 }
 
 static char		*get_symbol_elf32(uint32_t addr)
@@ -73,9 +80,8 @@ extern int		builtin_stack_print(char **opts)
 
 	if (opts && opts[0]) {
 		max_frame = atoi(opts[0]);
-		printk("max frame %d\n", max_frame);
 		if (max_frame <= 0 || max_frame > 50) {
-			printk("Error: Invalide argument: %d\n", max_frame);
+			printk("Error: Invalide argument: %s\n", opts[0]);
 			return (SH_ERROR);
 		}
 	} else {
