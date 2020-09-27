@@ -9,7 +9,7 @@ extern uint8_t		wait_ps2_to_write(void)
 	//wait for bit 1 to be clear
 	do {
 		status = inb(0x64);
-	} while ((status & 0x02) == 1);
+	} while (status & 0x02);
 	return (status);
 }
 
@@ -20,7 +20,7 @@ extern uint8_t		wait_ps2_to_read(void)
 	//wait for bit 0 to be set
 	do {
 		status = inb(0x64);
-	} while ((status & 0x01) == 0);
+	} while (!(status & 0x01));
 	return (status);
 }
 

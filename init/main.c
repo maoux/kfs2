@@ -4,6 +4,7 @@
 #include <kfs/keyboard.h>
 #include <kfs/shell.h>
 #include <kfs/gdt.h>
+#include <kfs/elf.h>
 
 extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 {
@@ -17,6 +18,9 @@ extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 
 	/* Setup GDT */
 	init_gdt();
+
+	/* Setup multiboot infos api */
+	grub_info_init(meminfo_offset);
 
 	/* Init text mode params with multiboot specs if available */
 	grub_info = (t_grub_info *)meminfo_offset;
@@ -37,11 +41,16 @@ extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 		print_grub_meminfo(grub_info);
 	}
 
-
 	/* keyboard test and infinite loop (break it with esc key)*/
-	if (ps2_keyboard_init() == 1) {
-		printk(KERN_ERR "PS/2 Controller tests failed\n");
-		return ;
+	switch (ps2_keyboard_init()) {
+		case 0:
+			printk(KERN_INFO "Test PS/2 Controller passed\n");
+			break ;
+		case 1:
+		default:
+			printk(KERN_ERR "PS/2 Controller tests failed\n");
+			return ;
 	}
+
 	shell();
 }

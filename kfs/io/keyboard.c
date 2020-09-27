@@ -112,11 +112,11 @@ extern uint8_t		ps2_keyboard_init(void)
 	/* perform self test */
 	wait_ps2_to_write();
 	response = send_command(0x64, 0xaa, 0, 0, 1);
-	if (response == 0x55) {
-		printk(KERN_INFO "Test PS/2 Controller passed\n");
-	}
-	else if (response == 0xfc) {
-		printk(KERN_INFO "Test PS/2 Controller failed\n");
+	// if (response == 0x55) {
+	// 	printk(KERN_INFO "Test PS/2 Controller passed\n");
+	// }
+	if (response == 0xfc) {
+		return (1);
 	}
 
 	/*
@@ -127,12 +127,12 @@ extern uint8_t		ps2_keyboard_init(void)
 	//send_command(0x64, 0x60, config, 1, 0);
 
 	/* determine if there are 2 channels */
-	if ((config & 0x20) == 1) {
+	if (config & 0x20) {
 		wait_ps2_to_write();
 		send_command(0x64, 0xa8, 0x00, 0, 0);
 		wait_ps2_to_write();
 		config = send_command(0x64, 0x20, 0x00, 0, 1);
-		if ((config & 0x20) == 1) {
+		if (config & 0x20) {
 			printk(KERN_INFO "PS/2 controller doesn't support dual channels\n");
 		}
 		else {
