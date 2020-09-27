@@ -15,10 +15,13 @@ static int		line_exec(char *line);
 
 static char		buffer[BUF_SIZE];
 static uint16_t	pos;
-static uint8_t		cmds_nbr = 1;
+static uint8_t		cmds_nbr = 5;
 static t_shell_cmd	cmds[] = {
 	{.cmd = "shutdown", .f = builtin_shutdown},
-	{.cmd = "halt", .f = builtin_shutdown}
+	{.cmd = "halt", .f = builtin_shutdown},
+	{.cmd = "reboot", .f = builtin_reboot},
+	{.cmd = "print_stack", .f = builtin_stack_print},
+	{.cmd = "bt", .f = builtin_stack_print}
 };
 
 
@@ -103,7 +106,7 @@ static int		line_exec(char *line)
 	}
 	opts[i] = NULL;
 	if (!strcmp(cmd, "")) {
-		return (0);
+		return (SH_SUCCESS);
 	}
 	for (uint8_t i = 0; i < cmds_nbr; i++) {
 		if (!strcmp(cmd, cmds[i].cmd)) {
@@ -111,7 +114,7 @@ static int		line_exec(char *line)
 		}
 	}
 	printk("Error: %s: command not found\n", cmd);
-	return (1);
+	return (SH_ERROR);
 }
 
 extern void		shell(void)
