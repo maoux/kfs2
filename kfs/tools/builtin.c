@@ -5,6 +5,8 @@
 #include <kfs/elf.h>
 #include <stdlib.h>
 
+static char		*get_symbol_elf32(uint32_t addr);
+
 extern int		builtin_shutdown(char **opts)
 {
 	(void)(opts);
@@ -31,6 +33,9 @@ static char		*get_symbol_elf32(uint32_t addr)
 	mbi_hdr = hdrt_info_get();
 	if (mbi_hdr) {
 		shdr_cur = (t_Elf32_Shdr *)(mbi_hdr->addr);
+		if (mbi_hdr->num == 0 || mbi_hdr->shndx == 0) {
+			return (NULL);
+		}
 		for (uint32_t i = 0; i < mbi_hdr->num; i++) {
 			shdr_cur = (t_Elf32_Shdr *)(mbi_hdr->addr + (mbi_hdr->size * i));
 			if (shdr_cur->sh_type == SHT_SYMTAB) {
@@ -43,11 +48,18 @@ static char		*get_symbol_elf32(uint32_t addr)
 
 		}
 
+		if (shdr_str_table == NULL) {
+			return (NULL);
+		}
+
 		for (int i = 0; i < size; i++) {
 			if (addr > sym_tab[i].st_value
 				&& (!sym || sym_tab[i].st_value > sym->st_value)) {
 					sym = &(sym_tab[i]);
 				}
+		}
+		if (sym == NULL) {
+			return (NULL);
 		}
 		return (&(shdr_str_table[sym->st_name]));
 	}
