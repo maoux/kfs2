@@ -133,5 +133,8 @@ typedef struct grub_info	t_grub_info;
 # define IS_GFLAG(x, y) x & (y)
 
 extern void		print_grub_meminfo(t_grub_info *grub_info);
+extern void		grub_info_init(uint32_t	*addr);
+
+extern t_hdrt_info	*hdrt_info_get(void);
 
 #endif

@@ -1,6 +1,8 @@
 #include <kfs/kernel.h>
 #include <kfs/multiboot.h>
 
+t_grub_info		*grub_info;
+
 extern void		print_grub_meminfo(t_grub_info *grub_info)
 {
 	t_palette_color_info	*palette;
@@ -65,5 +67,24 @@ extern void		print_grub_meminfo(t_grub_info *grub_info)
 					mmap->length_high, mmap->length_low, mmap->type);
 		 	mmap = (t_mmap *)((uint32_t)mmap + mmap->size + sizeof(uint32_t));
 		}
+	}
+}
+
+extern t_hdrt_info	*hdrt_info_get(void)
+{
+	if (grub_info) {
+		if (IS_GFLAG(grub_info->flags, GFLAG_FMTELF)) {
+			return (&(grub_info->fmt_info.elf_hdr_table_info));
+		}
+	}
+	return (NULL);
+}
+
+extern void		grub_info_init(uint32_t	*addr)
+{
+	if (addr) {
+		grub_info = (t_grub_info *)addr;
+	} else {
+		grub_info = NULL;
 	}
 }
