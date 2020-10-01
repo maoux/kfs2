@@ -3,6 +3,7 @@
 #include <kfs/kernel.h>
 #include <kfs/multiboot.h>
 #include <kfs/elf.h>
+#include <kfs/io.h>
 #include <stdlib.h>
 
 static char		*get_symbol_elf32(uint32_t addr);

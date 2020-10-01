@@ -49,6 +49,7 @@ typedef struct gdt_descriptor	t_gdt_descriptor;
 /*
 	direction bit/conforming bit
 	Direction bit for data. 0 segment grows up. 1 grows down
+	(if 1, offset > limit)
 	Conforming bit for code. 0 for restrictive prlv execution
 	1 for <= prlv execution
 */

@@ -166,7 +166,7 @@ extern void		putchar(unsigned char c)
 			screens[screen_cursor][1] = csr_y;
 		}
 	} else if (c == '\t') {
-		//n & 000
+		//n & 1000
 		csr_x = (csr_x + 8) & ~(8 - 1);
 		if (screen_buffer_enabled) {
 			screens[screen_cursor][0] = csr_x;
