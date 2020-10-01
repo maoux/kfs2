@@ -38,7 +38,7 @@ extern void		kmain(uint32_t magic, uint32_t *meminfo_offset)
 	text_mode_intro_print();
 
 	if (debug) {
-		print_grub_meminfo(grub_info);
+		grub_meminfo_print(grub_info);
 	}
 
 	/* keyboard test and infinite loop (break it with esc key)*/

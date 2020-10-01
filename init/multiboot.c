@@ -3,7 +3,7 @@
 
 t_grub_info		*grub_info;
 
-extern void		print_grub_meminfo(t_grub_info *grub_info)
+extern void		grub_meminfo_print(t_grub_info *grub_info)
 {
 	t_palette_color_info	*palette;
 	t_color					*color;
